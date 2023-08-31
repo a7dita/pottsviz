@@ -1,0 +1,3 @@
+#+title: Pottsviz
+
+Pottsviz is an interactive visualization tool for playing with memory /latching/ in the fascinating *Potts associative network*.
