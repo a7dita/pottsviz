@@ -20,6 +20,20 @@
 	const handleClick = () => {
 		isRunning = !isRunning;
 	};
+
+	// create frontend for calling python scripts at the server
+	let result: string | undefined = undefined;
+	let command: string;
+
+	const handleRun = async (command: string) => {
+		const r = await fetch('/api', {
+			method: 'POST',
+			body: JSON.stringify({
+				command
+			})
+		});
+		result = await r.json();
+	};
 </script>
 
 <svelte:head>
@@ -76,6 +90,22 @@
 			class="space-y-2 flex flex-col place-items-center place-items-center bg-sky-500/[.06] rounded p-4 w-150"
 		>
 			the plot will go here
+		</div>
+	</div>
+
+	<div class="space-y-4">
+		<input
+			bind:value={command}
+			type="text"
+			class="border-2 border-gray-300 bg-gray-100 round py-1 px-4"
+			placeholder="enter command to run..."
+		/>
+		<button class="px-4 py-1 rounded bg-gray-200" on:click={async () => await handleRun(command)}>
+			Run command
+		</button>
+
+		<div class="border-2 border-gray-300 bg-blue-200 rounded h-40">
+			{result}
 		</div>
 	</div>
 </div>
