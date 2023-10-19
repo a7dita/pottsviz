@@ -2,6 +2,7 @@
 	// import necessary modules
 	import { onMount } from 'svelte';
 	import SliderParam from './SliderParam.svelte';
+	import PlotLatch from './PlotLatch.svelte';
 	import katex from 'katex';
 
 	// define latex strings for parameters, using katex
@@ -86,12 +87,10 @@
 				>
 			</div>
 		</div>
+		<!-- display the plot -->
 		<div
-			class="space-y-2 flex flex-col place-items-center place-items-center bg-sky-500/[.06] rounded p-4 w-150"
+			class="space-y-2 flex flex-col border-4 border-gray-200 place-items-center place-items-center rounded p-4 h-[550px] w-[700px]"
 		>
-			the plot will go here
-		</div>
-	</div>
 
 	<div class="space-y-4">
 		<input
@@ -106,6 +105,7 @@
 
 		<div class="border-2 border-gray-300 bg-blue-200 rounded h-40">
 			{result}
+			<PlotLatch />
 		</div>
 	</div>
 </div>
