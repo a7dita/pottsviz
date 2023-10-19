@@ -52,12 +52,14 @@
 	</div>
 	<div class="flex space-x-4">
 		<div class="space-y-4">
+			<!-- display the parameter choices -->
 			<div class="space-y-2 flex flex-col place-items-center bg-sky-500/[.06] rounded p-4">
 				<p class="">Your choices:</p>
 				<p>{@html S} = {valueS}</p>
 				<p>{@html W} = {valueW}</p>
 				<p>{@html Tau2} = {valueTau2}</p>
 			</div>
+			<!-- make the sliders -->
 			<div>
 				<SliderParam labelName={S} minValue={3} maxValue={11} bind:value={valueS} stepSize={1} />
 				<SliderParam
@@ -76,6 +78,7 @@
 				/>
 			</div>
 
+			<!-- create the button for starting/stopping the simulation -->
 			<div class="space-y-2 flex flex-col place-items-center p-4 text-sm">
 				<button
 					class="px-4 py-2 rounded"
