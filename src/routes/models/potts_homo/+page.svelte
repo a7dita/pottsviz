@@ -15,25 +15,34 @@
 	let valueW = 1.2;
 	let valueTau2 = 200;
 
+	// set the command for the backend c++ code
+	let command: string = './RunSim 7 1.2 200';
+	// TODO make the arguments responsive
+
 	// set state and state function for the start button
 	let isRunning = false;
 
 	const handleClick = () => {
+		if (!isRunning) {
+			runCppProgram(command);
+		}
 		isRunning = !isRunning;
 	};
 
 	// create frontend for calling python scripts at the server
-	let result: string | undefined = undefined;
-	let command: string;
 
-	const handleRun = async (command: string) => {
-		const r = await fetch('/api', {
+	const runCppProgram = async (command: string) => {
+		const response = await fetch('/api', {
 			method: 'POST',
-			body: JSON.stringify({
-				command
-			})
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ command })
 		});
-		result = await r.json();
+
+		const text = await response.text(); // processing the text response
+		// Display or use that text file content
+		console.log(text);
 	};
 </script>
 
@@ -94,20 +103,6 @@
 		<div
 			class="space-y-2 flex flex-col border-4 border-gray-200 place-items-center place-items-center rounded p-4 h-[550px] w-[700px]"
 		>
-
-	<div class="space-y-4">
-		<input
-			bind:value={command}
-			type="text"
-			class="border-2 border-gray-300 bg-gray-100 round py-1 px-4"
-			placeholder="enter command to run..."
-		/>
-		<button class="px-4 py-1 rounded bg-gray-200" on:click={async () => await handleRun(command)}>
-			Run command
-		</button>
-
-		<div class="border-2 border-gray-300 bg-blue-200 rounded h-40">
-			{result}
 			<PlotLatch />
 		</div>
 	</div>
