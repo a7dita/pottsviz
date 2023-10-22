@@ -20,17 +20,20 @@
 	let textfileName: string;
 	$: {
 		command = `python3 automate.py ${valueS} ${valueW} ${valueTau2}`;
-		console.log(command);
 		textfileName = `mall_S${valueS}_w${valueW}0_gA0.5_T${valueTau2}.0_cue0`;
 	}
 
 	// set state and state function for the start button
 	let isRunning = false;
+	let text: any = '';
+	$: {
+		console.log(text);
+	}
 
 	const handleClick = () => {
-		if (!isRunning) {
-			runCppProgram(command);
-		}
+		// if (!isRunning) {
+		// runCppProgram(command);
+		// }
 		if (isRunning) {
 			getText(textfileName);
 		}
@@ -38,14 +41,15 @@
 	};
 
 	// create frontend for calling python scripts at the server
-
 	const getText = async (textfileName: string) => {
 		const response = await fetch('/api', {
 			method: 'POST',
 			body: JSON.stringify({ textfileName })
 		});
-		const text = await response.text();
-		console.log(text);
+		const receivedText = await response.text();
+		// console.log(receivedText);
+		// console.log(typeof receivedText);
+		text = receivedText;
 	};
 
 	let result: string | undefined = undefined;
@@ -119,9 +123,9 @@
 		</div>
 		<!-- display the plot -->
 		<div
-			class="space-y-2 flex flex-col border-4 border-gray-200 place-items-center place-items-center rounded p-4 h-[550px] w-[700px]"
+			class="space-y-2 flex flex-col border-4 border-gray-200 place-items-left rounded p-4 h-[550px] w-[700px]"
 		>
-			<PlotLatch />
+			<PlotLatch {text} />
 		</div>
 	</div>
 </div>

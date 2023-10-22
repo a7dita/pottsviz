@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
 
+	export let text: string;
 	interface DataPoint {
 		timeStep: number[];
 		values: number[][];
@@ -11,9 +12,9 @@
 
 	// Fetch data
 	onMount(async () => {
-		const response = await fetch('../src/routes/data/mall_cue0_seed1_d');
-		const fileContent = await response.text();
-		const lines = fileContent.split('\n');
+		// const response = await fetch('../src/routes/data/mall_cue0_seed1_d');
+		// const fileContent = await response.text();
+		const lines = text.split('\n');
 
 		lines.forEach((line, i) => {
 			const parts = line.split('\t').map(Number);
@@ -31,12 +32,15 @@
 	// FIXME debug the extra line of entry
 	$: {
 		if (data.timeStep.length && data.values.length) {
-			const svg = d3.select('#chart').attr('width', 650).attr('height', 500);
-
+			const svg = d3
+				.select('#chart')
+				.attr('width', Math.max(...data.timeStep) * 1.3)
+				.attr('height', 500);
+			console.log(Math.max(...data.timeStep) * 1.3);
 			const x = d3
 				.scaleLinear()
 				.domain([0, Math.max(...data.timeStep)])
-				.range([0, 650]);
+				.range([0, Math.max(...data.timeStep) * 1.3]);
 			// FIXME set the width according to the time range
 
 			const y = d3.scaleLinear().domain([0, 1]).range([500, 0]);
