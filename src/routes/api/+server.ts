@@ -4,12 +4,6 @@ import { exec } from 'node:child_process';
 import fs from 'node:fs/promises';
 import util from 'node:util';
 
-// const execPromisified = util.promisify(exec);
-
-// const runCommand = async (command: string) => {
-// 	const { stdout, stderr } = await execPromisified(command);
-// 	return stdout;
-// };
 
 const readOutput = async () => {
 	try {
@@ -20,10 +14,7 @@ const readOutput = async () => {
 	}
 }
 
-export const POST: RequestHandler = async ({ request }) => {
-	// const { command } = await request.json();
-	// const result = await runCommand(command);
-	// console.log(result)
+export const GET: RequestHandler = async ({ request }) => {
 	const output = await readOutput();
 	return new Response(output);
 

@@ -26,10 +26,21 @@
 		if (!isRunning) {
 			runCppProgram(command);
 		}
+		if (isRunning) {
+			getText();
+		}
 		isRunning = !isRunning;
 	};
 
 	// create frontend for calling python scripts at the server
+
+	const getText = async () => {
+		const response = await fetch('/api', { method: 'GET' });
+		const text = await response.text();
+		console.log(text);
+	};
+
+	let result: string | undefined = undefined;
 
 	const runCppProgram = async (command: string) => {
 		const response = await fetch('/api', {
