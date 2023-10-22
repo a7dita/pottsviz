@@ -16,12 +16,11 @@
 	let valueTau2 = 200;
 
 	// set the command for the backend c++ code
-	// let command: string = 'pyhton3 hello.py';
-	// let command: string = 'pyhton3 hello.py';
-
 	let command: string;
-	// let command: string = './RunSim 7 ';
-	// TODO make the arguments responsive
+	$: {
+		command = `python3 automate.py ${valueS} ${valueW} ${valueTau2}`;
+		console.log(command);
+	}
 
 	// set state and state function for the start button
 	let isRunning = false;
@@ -118,25 +117,6 @@
 			class="space-y-2 flex flex-col border-4 border-gray-200 place-items-center place-items-center rounded p-4 h-[550px] w-[700px]"
 		>
 			<PlotLatch />
-		</div>
-	</div>
-	<!-- contains the python input/putput elements -->
-	<div class="space-y-4">
-		<input
-			bind:value={command}
-			type="text"
-			class="border-2 border-gray-300 bg-gray-100 round py-1 px-4"
-			placeholder="enter command to run..."
-		/>
-		<button
-			class="px-4 py-1 rounded bg-gray-200"
-			on:click={async () => await runCppProgram(command)}
-		>
-			Run command
-		</button>
-
-		<div class="border-2 border-gray-300 bg-blue-200 rounded h-40">
-			{result}
 		</div>
 	</div>
 </div>
