@@ -17,9 +17,11 @@
 
 	// set the command for the backend c++ code
 	let command: string;
+	let textfileName: string;
 	$: {
 		command = `python3 automate.py ${valueS} ${valueW} ${valueTau2}`;
 		console.log(command);
+		textfileName = `mall_S${valueS}_w${valueW}0_gA0.5_T${valueTau2}.0_cue0`;
 	}
 
 	// set state and state function for the start button
@@ -30,15 +32,18 @@
 			runCppProgram(command);
 		}
 		if (isRunning) {
-			getText();
+			getText(textfileName);
 		}
 		isRunning = !isRunning;
 	};
 
 	// create frontend for calling python scripts at the server
 
-	const getText = async () => {
-		const response = await fetch('/api', { method: 'GET' });
+	const getText = async (textfileName: string) => {
+		const response = await fetch('/api', {
+			method: 'POST',
+			body: JSON.stringify({ textfileName })
+		});
 		const text = await response.text();
 		console.log(text);
 	};
