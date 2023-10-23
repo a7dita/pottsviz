@@ -34,9 +34,24 @@
 		// if (!isRunning) {
 		// runCppProgram(command);
 		// }
-		if (isRunning) {
-			getText(textfileName);
+		// if (isRunning) {
+		// getText(textfileName);
+		// }
+		let intervalId = null;
+
+		if (!isRunning) {
+			// Stop execution if it was already running
+			if (intervalId) {
+				clearInterval(intervalId);
+				intervalId = null;
+			} else {
+				// Call the function every 2 seconds
+				intervalId = setInterval(() => {
+					getText(textfileName);
+				}, 2000);
+			}
 		}
+
 		isRunning = !isRunning;
 	};
 
