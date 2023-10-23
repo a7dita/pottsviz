@@ -2,7 +2,10 @@
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
 
-	export let text: string;
+	export let text: string = '';
+	$: {
+		// console.log(text);
+	}
 	interface DataPoint {
 		timeStep: number[];
 		values: number[][];
@@ -11,10 +14,16 @@
 	let data: DataPoint = { timeStep: [], values: [] };
 
 	// Fetch data
-	onMount(async () => {
+
+	// FIXME THE ONLY FINAL STEP MISSING (AND I COULD NOT FIX SO FAR) IS - ONMOUNT FUNCTION IS NOT REACTIVE.
+	// HENCE THE DATA IS NOT GETTING UPDATED WHEN I AM TRYING TO LOAD IT FROM THE VARIABLE 'TEXT'.
+	// WE WILL HAVE TO FIND ANOTHER WAY.
+	onMount(() => {
 		// const response = await fetch('../src/routes/data/mall_cue0_seed1_d');
 		// const fileContent = await response.text();
-		const lines = text.split('\n');
+		// const lines = fileContent.split('\n');
+		console.log(text);
+		let lines = text.split('\t');
 
 		lines.forEach((line, i) => {
 			const parts = line.split('\t').map(Number);
@@ -36,12 +45,11 @@
 				.select('#chart')
 				.attr('width', Math.max(...data.timeStep) * 1.3)
 				.attr('height', 500);
-			console.log(Math.max(...data.timeStep) * 1.3);
+			// console.log(Math.max(...data.timeStep) * 1.3);
 			const x = d3
 				.scaleLinear()
 				.domain([0, Math.max(...data.timeStep)])
 				.range([0, Math.max(...data.timeStep) * 1.3]);
-			// FIXME set the width according to the time range
 
 			const y = d3.scaleLinear().domain([0, 1]).range([500, 0]);
 

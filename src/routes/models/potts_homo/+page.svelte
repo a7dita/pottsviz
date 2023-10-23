@@ -25,11 +25,7 @@
 
 	// set state and state function for the start button
 	let isRunning = false;
-	let text: any = '';
-	$: {
-		console.log(text);
-	}
-
+	let text: string = '';
 	const handleClick = () => {
 		// if (!isRunning) {
 		// runCppProgram(command);
@@ -62,8 +58,6 @@
 			body: JSON.stringify({ textfileName })
 		});
 		const receivedText = await response.text();
-		// console.log(receivedText);
-		// console.log(typeof receivedText);
 		text = receivedText;
 	};
 
@@ -79,7 +73,7 @@
 		});
 		result = await response.json(); // processing the text response
 		// Display or use that text file content
-		console.log(result);
+		// console.log(result);
 	};
 </script>
 
