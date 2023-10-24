@@ -57,7 +57,7 @@
 		// console.log(result);
 	};
 
-	// here I initialize a helper variable to track the state of an ongoing execution - for calling our getText function again and again.
+	// here I initialize a helper variable to track the state of an ongoing simulation.
 	let intervalId: any = null;
 
 	// I set the state variable and the state function for the start/stop button.
@@ -70,26 +70,23 @@
 		if (!isRunning) {
 			runCppProgram(command);
 			// FIXME need to kill the backend cpp process upon pressing the 'stop' button.
+			// for the moment, I'm manually killing the process.
 		}
 
 		// in both starting/stopping cases, I toggle the isRunning state
 		isRunning = !isRunning;
 
-		//when the command is running, I keep calling the getText function.
-		// FIXME I need to stop the intervaled execution upon 'stop' button press
-		// it is not working and I need to manually refresh the page upon finishing the simulation.
+		//when the command is running, I keep calling the getText function every 2 sec
 		if (isRunning) {
-			// I stop execution if it was already running
-			if (intervalId) {
-				clearInterval(intervalId);
-				intervalId = null;
-			} else {
-				// if not running, I start execution
-				// I call the function every 2 seconds
-				intervalId = setInterval(() => {
-					getText(textfileName);
-				}, 2000);
-			}
+			intervalId = setInterval(() => {
+				getText(textfileName);
+			}, 2000);
+		}
+
+		if (!isRunning) {
+			// I stop execution if it is already running, and 'stop' button pressed
+			clearInterval(intervalId);
+			intervalId = null;
 		}
 	};
 </script>
