@@ -7,7 +7,7 @@
 </script>
 
 <div class="flex flex-row space-x-4 space-y-4 place-items-center">
-	<!-- FIXME -->
+	<!-- FIXME make the sliders equal -->
 	<label for="steps-range" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" />
 
 	<p>{@html labelName}</p>
