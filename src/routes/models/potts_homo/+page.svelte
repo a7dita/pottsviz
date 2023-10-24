@@ -25,34 +25,37 @@
 
 	// set state and state function for the start button
 	let isRunning = false;
+	let intervalId: any = null;
 	let text: string = '';
 	const handleClick = () => {
-		// if (!isRunning) {
-		// runCppProgram(command);
-		// }
-		// if (isRunning) {
-		// getText(textfileName);
-		// }
-		let intervalId = null;
-
 		if (!isRunning) {
+			runCppProgram(command);
+			// TODO kill the backend process upon 'stop' button press.
+		}
+
+		// Toggle the isRunning state
+		isRunning = !isRunning;
+
+		// TODO need to stop the execution upon 'stop' button press.
+		if (isRunning) {
 			// Stop execution if it was already running
 			if (intervalId) {
 				clearInterval(intervalId);
 				intervalId = null;
 			} else {
+				// If not running, start execution
 				// Call the function every 2 seconds
 				intervalId = setInterval(() => {
 					getText(textfileName);
 				}, 2000);
 			}
 		}
-
-		isRunning = !isRunning;
 	};
 
-	// create frontend for calling python scripts at the server
+	// create frontend for fetting the textfiel from the server
 	const getText = async (textfileName: string) => {
+		console.log('the textfile attempted is');
+		console.log(textfileName);
 		const response = await fetch('/api', {
 			method: 'POST',
 			body: JSON.stringify({ textfileName })
@@ -61,6 +64,7 @@
 		text = receivedText;
 	};
 
+	// create frontend for calling python scripts at the server
 	let result: string | undefined = undefined;
 
 	const runCppProgram = async (command: string) => {
