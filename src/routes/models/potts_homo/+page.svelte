@@ -70,6 +70,7 @@
 		if (!isRunning) {
 			runCppProgram(command);
 			// FIXME need to kill the backend cpp process upon pressing the 'stop' button.
+			// maybe also delete the generated files of the backend?
 			// for the moment, I'm manually killing the process.
 		}
 
