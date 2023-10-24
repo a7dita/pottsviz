@@ -1,21 +1,22 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import * as d3 from 'd3';
+	import * as d3 from 'd3'; // I import the plotting library
 
+	// here I export the variable, so that the value can be changed from +page.svelte (main page for this directory)
 	export let text: string = '';
 
+	// I create an object type
 	interface DataPoint {
 		timeStep: number[];
 		values: number[][];
 	}
 
+	// ...and an instance of that object type.
 	let data: DataPoint = { timeStep: [], values: [] };
 
-	// load data
+	// I read data from the text variable
 	$: {
 		let lines = text.split('\n');
-		lines.shift();
-		// console.log(lines);
+		lines.shift(); // remove the first line, which is empty (in the present version of the c++ code)
 
 		lines.forEach((line, i) => {
 			const parts = line.split('\t').map(Number);
@@ -30,11 +31,10 @@
 		});
 	}
 
-	// FIXME debug the extra line of entry
 	$: {
 		if (data.timeStep.length && data.values.length) {
 			const svg = d3
-				.select('#chart')
+				.select('#chart') // 'chart is the ID of the svg element below.'
 				.attr('width', Math.max(...data.timeStep) * 0.13)
 				.attr('height', 500);
 			const x = d3
@@ -55,7 +55,7 @@
 					.datum(lineData)
 					.attr('d', line)
 					.attr('stroke-width', 1.2)
-					.attr('stroke', `hsl(${j * (360 / data.values.length)}, 100%, 50%)`) // Each line will have a unique hue
+					.attr('stroke', `hsl(${j * (360 / data.values.length)}, 100%, 50%)`) // I try to give each line will have a unique hue
 					// .attr('stroke', d3.schemeCategory10[j])
 					.attr('fill', 'none');
 			});
