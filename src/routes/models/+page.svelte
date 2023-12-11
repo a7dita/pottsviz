@@ -1,4 +1,4 @@
-<div class="space-y-4 flex flex-col p-20">
+<div class="space-y-4 flex flex-col p-10">
 	<p class="text-purple text-4xl">The models you can try</p>
 	<div class="inline-flex items-center justify-center w-full">
 		<hr class="w-full h-px bg-gray-200 border-0 dark:bg-gray-700" />
