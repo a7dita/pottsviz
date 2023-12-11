@@ -1,5 +1,5 @@
 <!-- <div class="space-y-10"> -->
-<div class="space-y-16 flex flex-col place-items-center">
+<div class="space-y-16 flex flex-col place-items-center p-20">
 	<div class="space-y-4">
 		<p class="text-purple-400 text-6xl py-10">Pottsviz</p>
 		<p class="text-purple-600 text-3xl">This toy visualization tool will show you in real time,</p>
