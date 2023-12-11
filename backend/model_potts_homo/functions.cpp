@@ -211,7 +211,7 @@ void test_patterns(Potts_params params, const int *xi){
 Network_runner::Network_runner(){
     
     this->dt = 10; // default
-    this->nCue = 1;
+    this->nCue = 1; // default
 }
 Network_runner::~Network_runner(){
     std::cout << "Simulation is finished." << std::endl;
@@ -241,7 +241,7 @@ void Network_runner::run_net(PNet *net, int start_cue, int Runs, int seed, const
         net->initialise();
         
         
-        snprintf(buffer, sizeof(buffer), "./mall_S%d_w%.2f_gA%.1f_T%.1f_cue%d", params.S, params.w, params.gammaA, params.T2, cue);
+        snprintf(buffer, sizeof(buffer), "./backend/data/mall_S%d_w%.2f_gA%.1f_T%.1f_cue%d", params.S, params.w, params.gammaA, params.T2, cue);
         mall.open(buffer, std::ios::out);
         mall << std::fixed << std::setprecision(5) << std::endl;
 

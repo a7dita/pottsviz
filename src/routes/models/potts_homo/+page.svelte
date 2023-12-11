@@ -1,7 +1,7 @@
 <script lang="ts">
 	// I choose to use TypeScript,
 	// which is almost like JavaScript -  but one needs to define types explicitely, when defining variables,
-	// which significantly helps in debugging.
+	//  which significantly helps in debugging.
 
 	// now I import necessary modules
 	import SliderParam from './SliderParam.svelte'; // it creates the slider elements for the parameters.
@@ -24,7 +24,7 @@
 	let textfileName: string;
 	$: {
 		command = `python3 automate.py ${valueS} ${valueW} ${valueTau2}`;
-		textfileName = `mall_S${valueS}_w${valueW}0_gA0.5_T${valueTau2}.0_cue0`;
+		textfileName = `backend/data/mall_S${valueS}_w${valueW}0_gA0.5_T${valueTau2}.0_cue0`;
 		// TODO we can send multiple textfile names here,
 		// to pass them to multiple plot elements in separate divisions,
 		// to get 3 plots for our 3 cues.

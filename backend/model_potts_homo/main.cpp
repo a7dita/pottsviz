@@ -22,9 +22,9 @@ void set_params(Potts_params *params){
     /*
     set default values for paramters
     */
-    (*params).N = 1000;     // number of units in a net
-    (*params).Cm = 150;     // mean connections per neuron 
-    (*params).p = 200;      // number of patterns 
+    (*params).N = 500;     // number of units in a net
+    (*params).Cm = 75;     // mean connections per neuron
+    (*params).p = 100;      // number of patterns
     (*params).S = 7;        // number of Potts states
     (*params).a = 0.25;    // sparsity
     (*params).U = 0.1;      // global threshold
@@ -47,7 +47,6 @@ void save_data(double * vec, int n, std::ofstream & outfile){
 int main(int argc, char *argv[]){
 
     
-    int Runs = 1500; // number of maximum updates
     int rand_seed = 1990; // random seed for srand48() and rlxd_init()
     
     int S;
@@ -61,7 +60,7 @@ int main(int argc, char *argv[]){
     assert(w>=0.0);
     assert(tau2>=50. && tau2<=1000.);
     
-    Runs = (int)(10*tau2); // when to stop simulations
+    int Runs = 5000; // when to stop simulations
         
     //setting parameters for the network
     Potts_params params; 
@@ -96,7 +95,7 @@ int main(int argc, char *argv[]){
     // Running network
     
     Network_runner runner; // a simple class object for running the network
-    runner.nCue = 3;
+    runner.nCue = 1;
     runner.dt = 5;
     runner.run_net(&net, 0, Runs, rand_seed, xi);
     

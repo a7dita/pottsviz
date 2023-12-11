@@ -8,5 +8,5 @@ w = float(sys.argv[2])
 T2 = int(sys.argv[3])
 
 print("Starting simulation!")
-os.system(f"backend/runsim {S} {w} {T2}")
+os.system(f"backend/model_potts_homo/runsim {S} {w} {T2}")
 print("Yaay!")
