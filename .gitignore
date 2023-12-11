@@ -1,6 +1,7 @@
 ### userdefined ###
 
-backend/runsim
+backend/model_potts_homo/runsim
+backend/data/
 
 ### vite/sveltekit ###
 
