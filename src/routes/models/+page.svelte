@@ -1,15 +1,50 @@
-<div class="space-y-6 flex flex-col">
-	<p class="text-purple text-2xl">The models you can try</p>
+<div class="space-y-4 flex flex-col">
+	<p class="text-purple text-4xl">The models you can try</p>
 	<div class="inline-flex items-center justify-center w-full">
-		<hr class="w-64 h-px bg-gray-200 border-0 dark:bg-gray-700" />
+		<hr class="w-full h-px bg-gray-200 border-0 dark:bg-gray-700" />
 	</div>
 
-	<ul class="max-w-md space-y-1 text-gray-300 list-disc list-inside dark:text-gray-400">
-		<li class="hover:scale-110 hover-translate-x-2.8 text-gray-400 hover:text-lime-400">
-			<a href="/models/potts_homo">Homogenous Potts Network</a>
-		</li>
-		<li class="hover:scale-110 hover-translate-x-2.8 text-gray-400 hover:text-lime-400">
-			<a href="/models/potts_hybrid">Hybrid Potts Network</a>
-		</li>
-	</ul>
+	<a href="/models/potts_homo">
+		<div
+			class="space-y-8 animate-pulse p-2 md:space-y-0 md:space-x-8 rtl:space-x-reverse md:flex md:items-center border-white border-6 hover:border-blue-200 hover-border-6"
+		>
+			<div
+				class="flex items-center justify-center w-full bg-gray-100 rounded sm:w-96 dark:bg-gray-700"
+			>
+				<img class="p-2" src="potts_homo.png" />
+			</div>
+			<div class="w-full p-6">
+				<div class="mb-4 text-gray-600 text-2xl">
+					<p>Homogenous Potts Network</p>
+				</div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[480px] mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[440px] mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[460px] mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[260px]" />
+			</div>
+		</div>
+	</a>
+
+	<a href="/models/potts_hybrid">
+		<div
+			class="space-y-8 animate-pulse p-2 md:space-y-0 md:space-x-8 rtl:space-x-reverse md:flex md:items-center border-white border-6 hover:border-blue-200 hover-border-6"
+		>
+			<div
+				class="flex items-center justify-center w-full bg-gray-100 rounded sm:w-96 dark:bg-gray-700"
+			>
+				<img class="p-2" src="potts_hybrid.png" />
+			</div>
+			<div class="w-full p-6">
+				<div class="mb-4 text-gray-600 text-2xl">
+					<p>Hybrid Potts Network</p>
+				</div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[480px] mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[440px] mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[460px] mb-2.5" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[260px]" />
+			</div>
+		</div>
+	</a>
 </div>

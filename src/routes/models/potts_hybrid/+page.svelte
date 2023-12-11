@@ -32,6 +32,7 @@
 
 	let Z_flag = 0;
 	let Z = 1;
+	// $: console.log(Z_flag);
 
 	// set the command for the backend python script (that calls the c++ executable)
 	// set the textfile name using the user inputs.
@@ -129,18 +130,56 @@
 <div class="space-y-4 p-4 text-gray-700">
 	<!-- model title -->
 	<div class="flex flex-row place-content-center p-4">
-		<p class="text-2xl">Demo - Potts Associative Network (Hybrid)</p>
+		<p class="text-3xl text-purple">Demo - Potts Associative Network (Hybrid)</p>
 	</div>
 	<!-- rest of the content -->
-	<div class="flex space-x-4">
-		<div class="py-20">
-			<SliderParam
-				labelName={L}
-				minValue={0.0}
-				maxValue={1.0}
-				bind:value={valueLambda}
-				stepSize={0.1}
-			/>
+	<div class="flex space-x-10">
+		<div>
+			<div class="py-20">
+				<SliderParam
+					labelName={L}
+					minValue={0.0}
+					maxValue={1.0}
+					bind:value={valueLambda}
+					stepSize={0.1}
+				/>
+			</div>
+			<div class="flex place-contents-center space-x-2">
+				<div
+					class="flex items-center px-4 ps-4 border border-gray-200 rounded dark:border-gray-700"
+				>
+					<input
+						id="bordered-radio-1"
+						type="radio"
+						value="0"
+						name="bordered-radio"
+						class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+						bind:group={Z_flag}
+						checked
+					/>
+					<label
+						for="bordered-radio-1"
+						class="w-full py-4 ms-2 font-medium text-gray-600 dark:text-gray-300">Unpaired</label
+					>
+				</div>
+				<div
+					class="flex items-center px-4 ps-4 border border-gray-200 rounded dark:border-gray-700"
+				>
+					<input
+						checked
+						id="bordered-radio-2"
+						type="radio"
+						value="3"
+						name="bordered-radio"
+						class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+						bind:group={Z_flag}
+					/>
+					<label
+						for="bordered-radio-2"
+						class="w-full py-4 ms-2 font-medium text-gray-600 dark:text-gray-300">Paired</label
+					>
+				</div>
+			</div>
 		</div>
 
 		<!-- display the plot -->
@@ -162,6 +201,7 @@
 						maxValue={11}
 						bind:value={valueS_fnet}
 						stepSize={1}
+						tooltipText={'The number of local states \n each Potts unit has\n in this half.'}
 					/>
 
 					<SliderParam
@@ -234,7 +274,7 @@
 	</div>
 
 	<!-- create the button for starting/stopping the simulation -->
-	<div class="space-y-2 flex flex-col place-items-center p-4 text-sm">
+	<div class="space-y-2 flex flex-col place-items-center p-4">
 		<button
 			class="px-4 py-2 rounded"
 			class:bg-pink-300={isRunning}

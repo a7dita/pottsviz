@@ -111,10 +111,10 @@
 <div class="space-y-16 p-4 text-gray-700">
 	<!-- model title -->
 	<div class="flex flex-row place-content-center">
-		<p class="text-2xl">Demo - Potts Associative Network (Homogenous)</p>
+		<p class="text-3xl text-purple">Demo - Potts Associative Network (Homogenous)</p>
 	</div>
 	<!-- rest of the content -->
-	<div class="flex space-x-4">
+	<div class="flex space-x-14">
 		<div class="space-y-4">
 			<!-- display the parameter choices -->
 			<div class="space-y-2 flex flex-col place-items-center bg-sky-500/[.06] rounded p-4">
@@ -143,7 +143,7 @@
 			</div>
 
 			<!-- create the button for starting/stopping the simulation -->
-			<div class="space-y-2 flex flex-col place-items-center p-4 text-sm">
+			<div class="space-y-2 flex flex-col place-items-center p-4">
 				<button
 					class="px-4 py-2 rounded"
 					class:bg-pink-300={isRunning}
@@ -163,5 +163,3 @@
 		</div>
 	</div>
 </div>
-<!-- what is written inside the quotation marks following 'class=' is the easier way of writing HTML styling using TailwindCSS or UnoCSS. -->
-<!-- in this project, I used UnoCSS. -->
