@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "generation_seed": 20261005,
   "selection": {
     "description": "Two degree-seven random-regular references plus nine maximin/D-optimal points selected before neural simulation.",
@@ -269,5 +269,14 @@
         "mixing_gap": -19.075803737654088
       }
     }
-  ]
+  ],
+  "label_order": "generator_order",
+  "generator_version": "legacy_design_restored_to_generator_order",
+  "label_order_provenance": {
+    "source_commit": "2b6cee28101e35d35c8d8149d5a5c148005e199c",
+    "method": "Exact replay of the legacy generator RNG stream; undo its independent row and column permutations. No new graph selected.",
+    "legacy_label_map": "legacy-label-map.json",
+    "legacy_design_directory": "legacy_shuffled",
+    "metrics": "Frozen selection coordinates retained from the original design. Graphs are isomorphic, so N4 and mixing gap are unchanged; Q* is the original feasible modularity estimate (its partition can be relabelled identically)."
+  }
 }

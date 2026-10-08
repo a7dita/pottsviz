@@ -2,10 +2,6 @@
   import type { topologies } from '$lib/topologies';
   import katex from 'katex';
   export let topology: typeof topologies[number];
-  let ordering = 'spectral';
-  const originalOrder = Array.from({ length: 49 }, (_, index) => index);
-  $: frontalOrder = ordering === 'spectral' ? topology.displayOrder.frontal : originalOrder;
-  $: posteriorOrder = ordering === 'spectral' ? topology.displayOrder.posterior : originalOrder;
   const math = (value: string) => katex.renderToString(value, { throwOnError: false });
   const definitions = [
     { key: 'redundancy_log1p', label: 'Redundancy', symbol: 'R_4',
@@ -21,26 +17,20 @@
 </script>
 
 <div class="topology-view">
-  <label class="ordering" for="display-order">Matrix view
-    <select id="display-order" bind:value={ordering}>
-      <option value="spectral">Spectral order (notebook)</option>
-      <option value="original">Original memory order</option>
-    </select>
-  </label>
   <p class="caption">Frontal memories ↓ · posterior memories →</p>
   <svg viewBox="0 0 310 310" role="img" aria-label="{topology.id} association matrix: 49 frontal by 49 posterior memories">
     <rect x="12" y="12" width="294" height="294" fill="#f3f0fa" />
-    {#each frontalOrder as f, row}
-      {#each posteriorOrder as p, column}
-        {#if topology.matrix[f][p]}<rect x={12+column*6} y={12+row*6} width="5.5" height="5.5" fill="#6d28d9"><title>Frontal {f} ↔ posterior {p} · weight {topology.edge_weight_after_loading.toFixed(4)}</title></rect>{/if}
+    {#each topology.matrix as row, f}
+      {#each row as edge, p}
+        {#if edge}<rect x={12+p*6} y={12+f*6} width="5.5" height="5.5" fill="#6d28d9"><title>Frontal {f} ↔ posterior {p} · weight {topology.edge_weight_after_loading.toFixed(4)}</title></rect>{/if}
       {/each}
     {/each}
     {#each [0, 7, 14, 21, 28, 35, 42] as index}
-      <text x={12+index*6} y="9" font-size="8" fill="#6b7280">{posteriorOrder[index]}</text>
-      <text x="10" y={17+index*6} text-anchor="end" font-size="8" fill="#6b7280">{frontalOrder[index]}</text>
+      <text x={12+index*6} y="9" font-size="8" fill="#6b7280">{index}</text>
+      <text x="10" y={17+index*6} text-anchor="end" font-size="8" fill="#6b7280">{index}</text>
     {/each}
   </svg>
-  <p class="caption">{ordering === 'spectral' ? 'Reordered for display, as in the notebook.' : 'Original CSV order.'} Axis labels and square tooltips retain original memory IDs. The simulation uses the original matrix.</p>
+  <p class="caption">Generator order stored in the CSV. The preview and simulation use the same memory IDs and matrix; no row or column sorting is applied.</p>
   <p class="caption">49 + 49 memories · {topology.degree} link{topology.degree === 1 ? '' : 's'} per memory · weight 1/{topology.degree}</p>
   <div class="scores">
     {#each definitions as definition, i}
@@ -62,8 +52,6 @@
 
 <style>
   svg { width: 100%; }
-  .ordering { display: grid; gap: .3rem; font-size: .8rem; margin: .5rem 0; }
-  select { width: 100%; padding: .4rem; border: 1px solid #d1d5db; border-radius: .4rem; background: white; }
   .caption { font-size: .75rem; color: #6b7280; margin: .5rem 0; }
   .scores { display: grid; gap: .5rem; }
   .score { position: relative; }
