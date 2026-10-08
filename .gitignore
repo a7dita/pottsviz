@@ -2,6 +2,8 @@
 
 backend/model_potts_homo/runsim
 backend/data/
+.simulators/
+.vercel/
 
 ### vite/sveltekit ###
 

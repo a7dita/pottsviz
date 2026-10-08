@@ -10,6 +10,7 @@
 #include <cassert>
 // global variable defined in "main.cpp"
 extern bool show_sim;
+extern bool stream_output;
 //**************************************************************************************************************************
 //**** Functions that are used only in this file, and
 // thus without any prototypes in "global.h"
@@ -230,7 +231,7 @@ void Network_runner::run_net(PNet *net, int start_cue, int Runs, int seed, const
     
     
     std::ofstream mall;
-    std::ofstream & mall_ref = mall; // reference
+    std::ostream & mall_ref = stream_output ? std::cout : mall;
     
     char buffer[0x100];
     
@@ -242,8 +243,8 @@ void Network_runner::run_net(PNet *net, int start_cue, int Runs, int seed, const
         
         
         snprintf(buffer, sizeof(buffer), "./backend/data/mall_S%d_w%.2f_gA%.1f_T%.1f_cue%d", params.S, params.w, params.gammaA, params.T2, cue);
-        mall.open(buffer, std::ios::out);
-        mall << std::fixed << std::setprecision(5) << std::endl;
+        if (!stream_output) mall.open(buffer, std::ios::out);
+        mall_ref << std::fixed << std::setprecision(5) << std::endl;
 
         // START DYNAMICS 
         std::cout << "----- dynamics started with cue = "<< cue << " -----" << std::endl;
@@ -259,6 +260,7 @@ void Network_runner::run_net(PNet *net, int start_cue, int Runs, int seed, const
             // snapshot the network
             if (t%dt==0) {
                 net->snapshot(t, xi, mall_ref);
+                if (stream_output) mall_ref.flush();
                 if (net->max_ovlp < 0.001 && t>20){
                     t = Runs;
                     //std::cout << t << "\t" << net->max_ovlp << std::endl;
@@ -543,7 +545,7 @@ void PNet::snapshot(const int t, const int *xi){
     	
 }
 
-void PNet::snapshot(const int t, const int *xi, std::ofstream &buffer){
+void PNet::snapshot(const int t, const int *xi, std::ostream &buffer){
 
     int p = params.p;
     int mu;
