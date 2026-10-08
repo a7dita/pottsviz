@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     std::ostream output(std::cout.rdbuf());
     std::cout.rdbuf(std::cerr.rdbuf());
     try {
-        if (argc != 20) throw std::invalid_argument("Expected topology wP wF SP SF tauP tauF lambdaP lambdaF U beta a T1 density patternSeed runtimeSeed cue N steps");
+        if (argc != 23) throw std::invalid_argument("Expected topology wP wF SP SF tauP tauF lambdaP lambdaF U beta a T1 density patternSeed runtimeSeed cueP cueF randomP randomF N steps");
         double wP = std::stod(argv[2]), wF = std::stod(argv[3]);
         int SP = std::stoi(argv[4]), SF = std::stoi(argv[5]);
         double tauP = std::stod(argv[6]), tauF = std::stod(argv[7]);
@@ -46,7 +46,9 @@ int main(int argc, char *argv[]) {
         double U = std::stod(argv[10]), beta = std::stod(argv[11]), a = std::stod(argv[12]);
         double T1 = std::stod(argv[13]), density = std::stod(argv[14]);
         int patternSeed = std::stoi(argv[15]), runtimeSeed = std::stoi(argv[16]);
-        int cue = std::stoi(argv[17]), N = std::stoi(argv[18]), steps = std::stoi(argv[19]);
+        int cueP = std::stoi(argv[17]), cueF = std::stoi(argv[18]);
+        int randomP = std::stoi(argv[19]), randomF = std::stoi(argv[20]);
+        int N = std::stoi(argv[21]), steps = std::stoi(argv[22]);
         for (double value : {wP, wF, tauP, tauF, lambdaP, lambdaF, U, beta, a, T1, density})
             if (!std::isfinite(value)) throw std::invalid_argument("Nonfinite parameter");
         if (wP < .6 || wP > 2 || wF < .6 || wF > 2 || SP < 3 || SP > 11 || SF < 3 || SF > 11 ||
@@ -55,7 +57,9 @@ int main(int argc, char *argv[]) {
             U < 0 || U > .6 || beta < 1 || beta > 21 || a < .1 || a > .4 ||
             T1 < 5 || T1 > 35 || density < .05 || density > .25 ||
             patternSeed < 1 || patternSeed > 2147482000 || runtimeSeed < 1 ||
-            cue < 0 || cue >= 49 || N < 50 || N > 500 || steps < 1 || steps > 5000)
+            cueP < 0 || cueP >= 49 || cueF < 0 || cueF >= 49 ||
+            (randomP != 0 && randomP != 1) || (randomF != 0 && randomF != 1) ||
+            N < 50 || N > 500 || steps < 1 || steps > 5000)
             throw std::invalid_argument("Parameters outside supported bounds");
         Potts_params posterior{}, frontal{};
         for (Potts_params *params : {&posterior, &frontal}) {
@@ -70,6 +74,12 @@ int main(int argc, char *argv[]) {
         // The helper seeds srand48(seed+1), matching the pilot pattern generator.
         make_random_memory(N, 49, SP, a, 0, xiP.data(), patternSeed-1);
         make_random_memory(N, 49, SF, a, 0, xiF.data(), patternSeed);
+        // Separate external patterns: never added to xi or used to learn J.
+        std::vector<int> externalP(N), externalF(N);
+        if (randomP) make_random_memory(N, 1, SP, a, 0, externalP.data(),
+            static_cast<int>((static_cast<unsigned>(patternSeed) ^ 0x13579bu) % 2147482000u));
+        if (randomF) make_random_memory(N, 1, SF, a, 0, externalF.data(),
+            static_cast<int>((static_cast<unsigned>(patternSeed) ^ 0x2468acu) % 2147482000u));
         PNet pNet(&posterior, 1000, patternSeed);
         pNet.make_J_assoc(49, xiP.data(), a, lambdaP);
         PNet fNet(&frontal, 1000, patternSeed+1000);
@@ -88,7 +98,9 @@ int main(int argc, char *argv[]) {
         srand48(runtimeSeed); rlxd_init(2, runtimeSeed);
         std::ostringstream sequence;
         output << std::fixed << std::setprecision(4);
-        manager.run_two_nets(&pNet, &fNet, Jf2p.data(), Jp2f.data(), xiP.data(), xiF.data(), sequence, output, cue, 1);
+        manager.run_two_nets(&pNet, &fNet, Jf2p.data(), Jp2f.data(), xiP.data(), xiF.data(), sequence, output,
+            randomP ? externalP.data() : xiP.data() + cueP*N,
+            randomF ? externalF.data() : xiF.data() + cueF*N, 1);
     } catch (const std::exception &error) {
         std::cerr << "Simulation error: " << error.what() << '\n';
         return 2;

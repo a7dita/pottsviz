@@ -9,7 +9,7 @@
       text: 'Counts four-edge cycles: two frontal memories sharing two posterior neighbours. The score is log(1 + cycle count). Higher values mean more shared associations.' },
     { key: 'q_star', label: 'Modularity', symbol: 'Q^*',
       formula: String.raw`Q^*\approx\max_c\frac{1}{49k}\sum_{f,p}\left(B_{fp}-\frac{k}{49}\right)\delta_{c_f,c_p}`,
-      text: 'Barber bipartite modularity, estimated by the pilot’s fixed-restart greedy search. Higher values mean stronger communities compared with a degree-preserving null. T00 is outside this degree-seven comparison; its manifest leaves Q* undefined.' },
+      text: 'Barber bipartite modularity, estimated by a fixed-restart greedy search. Higher values mean stronger communities compared with a degree-preserving null. T00 is outside this degree-seven comparison; Q* is undefined.' },
     { key: 'mixing_gap', label: 'Mixing gap', symbol: '\\gamma',
       formula: String.raw`\gamma=1-\sigma_2(B/k)^2`,
       text: 'Spectral gap of a two-step memory walk. σ₂ is the second singular value of the normalized association matrix. A larger gap means faster mixing; zero indicates disconnected components.' }
@@ -30,7 +30,6 @@
       <text x="10" y={17+index*6} text-anchor="end" font-size="8" fill="#6b7280">{index}</text>
     {/each}
   </svg>
-  <p class="caption">Generator order stored in the CSV. The preview and simulation use the same memory IDs and matrix; no row or column sorting is applied.</p>
   <p class="caption">49 + 49 memories · {topology.degree} link{topology.degree === 1 ? '' : 's'} per memory · weight 1/{topology.degree}</p>
   <div class="scores">
     {#each definitions as definition, i}

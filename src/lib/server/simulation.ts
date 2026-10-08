@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 
 /** One child process and one response per visitor; no shared files or jobs. */
-export function streamSimulation(program: 'homo' | 'hybrid' | 'topology', args: (number | string)[], signal: AbortSignal, metadata: { memories?: number; topology?: string; patternSeed?: number; runtimeSeed?: number } = {}) {
+export function streamSimulation(program: 'homo' | 'hybrid' | 'topology', args: (number | string)[], signal: AbortSignal, metadata: { memories?: number; topology?: string; patternSeed?: number; runtimeSeed?: number; posteriorCue?: number | 'random'; frontalCue?: number | 'random' } = {}) {
   const encoder = new TextEncoder();
   let stop = () => {};
   return new ReadableStream<Uint8Array>({

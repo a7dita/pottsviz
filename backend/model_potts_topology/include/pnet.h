@@ -63,7 +63,7 @@ class Network_runner{
 
         void run_two_nets(PNet *p_net, PNet *f_net, double *Jf2p, double *Jp2f,
             const int *xi_p, const int *xi_f,
-            std::ostream & buf1, std::ostream &buf2, int cue, int save_all);
+            std::ostream & buf1, std::ostream &buf2, const int *cue_p, const int *cue_f, int save_all);
         void compute_field(PNet *post_net, PNet *pre_net, const double *J
             , double *field);
         void make_field_decay(PNet *net_ptr, double *field, int cue, const int *xi

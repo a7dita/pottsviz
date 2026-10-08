@@ -1,6 +1,6 @@
 export interface Sample { time: number; posterior: number[]; frontal?: number[] }
 
-export interface RunInfo { memories: number; topology?: string; patternSeed?: number; runtimeSeed?: number }
+export interface RunInfo { memories: number; topology?: string; patternSeed?: number; runtimeSeed?: number; posteriorCue?: number | 'random'; frontalCue?: number | 'random' }
 
 export async function runSimulation(
   parameters: object, signal: AbortSignal, onSample: (sample: Sample) => void, onStarted?: (info: RunInfo) => void

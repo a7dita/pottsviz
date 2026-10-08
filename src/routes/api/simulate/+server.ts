@@ -32,11 +32,13 @@ export const POST: RequestHandler = async ({ request }) => {
   } else if (model === 'topology' && region(posterior, 800) && region(frontal, 1600)) {
     const selected = manifest.topologies.find(item => item.id === topology);
     const global = body.global;
+    const cue = (value: { cue?: number; randomCue?: boolean }) =>
+      Number.isInteger(value.cue) && number(value.cue, 0, 48) && typeof value.randomCue === 'boolean';
     if (!selected || !number(posterior.lambda, 0, 1) || !number(frontal.lambda, 0, 1) ||
       !global || !number(global.U, 0, 0.6) || !number(global.beta, 1, 21) ||
       !number(global.a, 0.1, 0.4) || !number(global.tau1, 5, 35) || !number(global.density, 0.05, 0.25) ||
-      !Number.isInteger(global.cue) || !number(global.cue, 0, 48) || frontal.tau2 <= posterior.tau2) {
-      return json({ message: 'Choose a saved topology, valid global parameters, and a slower frontal adaptation time.' }, { status: 400 });
+      !cue(posterior) || !cue(frontal) || frontal.tau2 <= posterior.tau2) {
+      return json({ message: 'Choose a saved topology, valid parameters and regional cues, and a slower frontal adaptation time.' }, { status: 400 });
     }
     // Fresh independent seeds are generated on the server for every Start.
     // This also refreshes dilution and update tables; the topology stays frozen.
@@ -44,8 +46,11 @@ export const POST: RequestHandler = async ({ request }) => {
     args = [resolve('.simulators/topologies', selected.file), posterior.w, frontal.w,
       posterior.S, frontal.S, posterior.tau2, frontal.tau2, posterior.lambda, frontal.lambda,
       global.U, global.beta, global.a, global.tau1, global.density,
-      patternSeed, runtimeSeed, global.cue, 500, steps];
-    metadata = { memories: 49, topology: selected.id, patternSeed, runtimeSeed };
+      patternSeed, runtimeSeed, posterior.cue, frontal.cue,
+      Number(posterior.randomCue), Number(frontal.randomCue), 500, steps];
+    metadata = { memories: 49, topology: selected.id, patternSeed, runtimeSeed,
+      posteriorCue: posterior.randomCue ? 'random' : posterior.cue,
+      frontalCue: frontal.randomCue ? 'random' : frontal.cue };
   } else {
     return json({ message: 'Please choose valid model parameters.' }, { status: 400 });
   }

@@ -474,7 +474,7 @@ void Network_runner::make_Hebb_connection(PNet *post_net, PNet *pre_net, double 
 // ------------------------------------------------------------------------
 void Network_runner::run_two_nets(PNet *p_net, PNet *f_net, double *Jf2p, double *Jp2f,
         const int *xi_p, const int *xi_f,
-        std::ostream & buf1, std::ostream &buf2, int cue, int save_all){
+        std::ostream & buf1, std::ostream &buf2, const int *cue_p, const int *cue_f, int save_all){
     /*
     Run two network with both f->p  and p->f connections
     Parameters:
@@ -482,7 +482,7 @@ void Network_runner::run_two_nets(PNet *p_net, PNet *f_net, double *Jf2p, double
     * Jf2p, Jp2f: pointers of connections between two networks
     * xi_p, xi_f: pointers of memory patterns of two networks
     * buf1, buf2: buffers of saving data into the file
-    * cue: pattern index for running one simulation
+    * cue_p, cue_f: one external or stored cue pattern per region (N states each)
     * save_all: if save_all==1, then save all overlaps to buf2.
     */
     int N1 = p_net->params.N;
@@ -520,8 +520,8 @@ void Network_runner::run_two_nets(PNet *p_net, PNet *f_net, double *Jf2p, double
 
         shuffle(array4updating, N1+N2);
 
-        this->make_field_decay(f_net, field_cue2f, cue, xi_f, t);
-        this->make_field_decay(p_net, field_cue2p, cue, xi_p, t);
+        this->make_field_decay(f_net, field_cue2f, 0, cue_f, t);
+        this->make_field_decay(p_net, field_cue2p, 0, cue_p, t);
 
         this->compute_field(p_net, f_net, Jf2p, field_f2p);
         this->compute_field(f_net, p_net, Jp2f, field_p2f);

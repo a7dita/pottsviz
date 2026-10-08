@@ -270,13 +270,15 @@
       }
     }
   ],
-  "label_order": "generator_order",
-  "generator_version": "legacy_design_restored_to_generator_order",
+  "label_order": "notebook_atlas_order",
+  "generator_version": "legacy_design_frozen_notebook_order",
   "label_order_provenance": {
     "source_commit": "2b6cee28101e35d35c8d8149d5a5c148005e199c",
-    "method": "Exact replay of the legacy generator RNG stream; undo its independent row and column permutations. No new graph selected.",
+    "method": "Original notebook atlas: degree-seven matrices use np.argsort(u[:,1]) and np.argsort(vt[1]) from np.linalg.svd(legacy_csv.astype(float), full_matrices=False); T00 retains identity. These frozen permutations are applied once when writing CSVs, never on loading or plotting.",
+    "frozen_order_file": "notebook-order.json",
     "legacy_label_map": "legacy-label-map.json",
     "legacy_design_directory": "legacy_shuffled",
-    "metrics": "Frozen selection coordinates retained from the original design. Graphs are isomorphic, so N4 and mixing gap are unchanged; Q* is the original feasible modularity estimate (its partition can be relabelled identically)."
+    "previous_generator_order_directory": "generator_order",
+    "metrics": "Original frozen selection coordinates retained. Relabeling preserves graph invariants and the original feasible modularity partition; finite-restart greedy estimates may depend on labels."
   }
 }
