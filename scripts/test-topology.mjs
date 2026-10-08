@@ -7,6 +7,7 @@ import { createServer } from 'vite';
 const directory = 'src/lib/topologies';
 const manifest = JSON.parse(readFileSync(`${directory}/manifest.json`, 'utf8'));
 const source = JSON.parse(readFileSync('tests/topology-source.json', 'utf8'));
+const displayOrders = JSON.parse(readFileSync('src/lib/topology-display-order.json', 'utf8'));
 assert.equal(manifest.topologies.length, 12);
 for (const [file, sha] of Object.entries(source.blobs)) {
   const bytes = readFileSync(`${directory}/${file}`);
@@ -14,8 +15,18 @@ for (const [file, sha] of Object.entries(source.blobs)) {
     `Frozen upstream blob: ${file}`);
 }
 for (const item of manifest.topologies) {
+  const order = displayOrders[item.id];
+  assert.equal(order.source_blob, source.blobs[item.file], 'Display order matches the frozen source');
+  for (const side of ['frontal', 'posterior'])
+    assert.deepEqual([...order[side]].sort((a, b) => a-b), Array.from({ length: 49 }, (_, i) => i));
+
   const matrix = readFileSync(`${directory}/${item.file}`, 'utf8').trim().split('\n').map(row => row.split(',').map(Number));
   assert.equal(matrix.length, 49);
+  const preview = order.frontal.map(f => order.posterior.map(p => matrix[f][p]));
+  const restored = Array.from({ length: 49 }, () => Array(49).fill(0));
+  preview.forEach((row, f) => row.forEach((edge, p) => { restored[order.frontal[f]][order.posterior[p]] = edge; }));
+  assert.deepEqual(restored, matrix, 'Preview ordering preserves every original memory association');
+
   assert(matrix.every(row => row.length === 49 && row.every(value => value === 0 || value === 1)));
   for (let f = 0; f < 49; ++f) {
     assert.equal(matrix[f].reduce((x, y) => x+y), item.degree);
@@ -91,5 +102,7 @@ try {
   assert.match(html, /Many-to-many Potts Network/);
   assert.equal((html.match(/<option value="T\d\d"/g) ?? []).length, 12);
   assert.match(html, /score-help-2/);
+  assert.match(html, /Spectral order \(notebook\)/);
+  assert.match(html, /Original memory order/);
   console.log('PASS: fresh concurrent seeds and samples, paired 49-memory API, baseline and many-to-many choices, global controls, validation, third-model page.');
 } finally { await server.close(); }
