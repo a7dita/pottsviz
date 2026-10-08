@@ -11,17 +11,17 @@
 			<div
 				class="flex items-center justify-center w-full bg-gray-100 rounded sm:w-96 dark:bg-gray-700"
 			>
-				<img class="p-2" src="potts_homo.png" />
+				<img class="p-2" src="/potts_homo.png" alt="Homogeneous Potts network" />
 			</div>
 			<div class="w-full p-6">
 				<div class="mb-4 text-gray-600 text-2xl">
 					<p>Homogenous Potts Network</p>
 				</div>
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[480px] mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[440px] mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[460px] mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[260px]" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[480px] mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[440px] mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[460px] mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[260px]"></div>
 			</div>
 		</div>
 	</a>
@@ -33,17 +33,17 @@
 			<div
 				class="flex items-center justify-center w-full bg-gray-100 rounded sm:w-96 dark:bg-gray-700"
 			>
-				<img class="p-2" src="potts_hybrid.png" />
+				<img class="p-2" src="/potts_hybrid.png" alt="Fronto-posterior Potts network" />
 			</div>
 			<div class="w-full p-6">
 				<div class="mb-4 text-gray-600 text-2xl">
 					<p>Hybrid Potts Network</p>
 				</div>
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[480px] mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[440px] mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[460px] mb-2.5" />
-				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[260px]" />
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[480px] mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[440px] mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[460px] mb-2.5"></div>
+				<div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[260px]"></div>
 			</div>
 		</div>
 	</a>

@@ -11,7 +11,6 @@
 #include <fstream>
 #include <iomanip>
 #include <cassert>
-#include <omp.h>
 
 #ifndef FUNCTION_H
 #include "functions.h"
@@ -426,6 +425,11 @@ void Network_runner::make_Hebb_connection(PNet *post_net, PNet *pre_net, double 
     double a1 = post_net->params.a;
     double a2 = pre_net->params.a;
     double a = sqrt(a1*a2);
+    // Preserve mu/nu summation order while avoiding p*p tests per tensor entry.
+    std::vector<std::pair<int, int>> matches;
+    for (int mu = 0; mu < p; ++mu)
+        for (int nu = 0; nu < p; ++nu)
+            if (match_table[mu*p+nu] != 0) matches.emplace_back(mu, nu);
 
 #pragma omp parallel for
     for(int i=0; i<N1; ++i){
@@ -441,14 +445,10 @@ void Network_runner::make_Hebb_connection(PNet *post_net, PNet *pre_net, double 
                 for(l=0; l<S2; ++l){
                     index = i*N2*S1*S2 + k*N2*S2 + j*S2 + l;
                     temp = 0.0;
-                    for(mu=0;mu<p;++mu){
-                        for(nu=0;nu<p;++nu){
-                            if(match_table[mu*p+nu]!=0){
-                                double cof1 = (double)(xi_post[mu*N1+i]==k)-a1/S1;
-                                double cof2 = (double)(xi_pre[nu*N2+j]==l)-a2/S2;
-                                temp += cof1*cof2; 
-                            }
-                        }  
+                    for (const auto &pair : matches) {
+                        double cof1 = (double)(xi_post[pair.first*N1+i]==k)-a1/S1;
+                        double cof2 = (double)(xi_pre[pair.second*N2+j]==l)-a2/S2;
+                        temp += cof1*cof2;
                     }
                     temp = temp/a/den1/den2;
                     *(Jmat+index) = factor*temp*denom;
@@ -481,7 +481,7 @@ void Network_runner::make_Hebb_connection(PNet *post_net, PNet *pre_net, double 
 // ------------------------------------------------------------------------
 void Network_runner::run_two_nets(PNet *p_net, PNet *f_net, double *Jf2p, double *Jp2f,
         const int *xi_p, const int *xi_f, 
-        std::ofstream & buf1, std::ofstream &buf2, int cue, int save_all){
+        std::ostream & buf1, std::ostream &buf2, int cue, int save_all){
     /*
     Run two network with both f->p  and p->f connections
     Parameters:
@@ -625,12 +625,27 @@ void Network_runner::compute_field(PNet *post_net, PNet *pre_net, const double *
     int S1 = post_net->params.S;
     int S2 = pre_net->params.S;
 
+    auto found = active_sources.find(J);
+    if (found == active_sources.end()) {
+        std::vector<std::vector<int>> sources(N);
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                bool active = false;
+                for (int k = 0; k < S1 && !active; ++k)
+                    for (int l = 0; l < S2; ++l)
+                        if (J[i*N*S1*S2 + k*N*S2 + j*S2 + l] != 0.0) { active = true; break; }
+                if (active) sources[i].push_back(j);
+            }
+        }
+        found = active_sources.emplace(J, std::move(sources)).first;
+    }
+    const auto &sources = found->second;
 #pragma omp parallel for
     for(int i=0;i<N;++i){
         int j, k, l, index;
         for(k=0;k<S1;k++){
             field[i*S1+k] = 0.;
-            for(j=0;j<N;j++){
+            for(int j : sources[i]){
                 for(l=0;l<S2;l++){
                     index = i*N*S1*S2 + k*N*S2 + j*S2 + l;
                     field[i*S1+k] += (*(J+index)) * pre_net->s[j*S2+l];

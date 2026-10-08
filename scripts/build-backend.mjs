@@ -12,6 +12,15 @@ const result = spawnSync('g++', [
 if (result.error) throw result.error;
 if (result.status !== 0) process.exit(result.status ?? 1);
 
+const hybridRoot = 'backend/model_potts_hybrid';
+const hybrid = spawnSync('g++', [
+  '-O3', '-std=gnu++17', '-Wl,-rpath,$ORIGIN/lib', `-I${hybridRoot}/include`,
+  ...['main.cpp', 'functions.cpp', 'pnet.cpp', 'rand_gen.cpp'].map(file => `${hybridRoot}/${file}`),
+  '-o', '.simulators/hybrid'
+], { stdio: 'inherit' });
+if (hybrid.error) throw hybrid.error;
+if (hybrid.status !== 0) process.exit(hybrid.status ?? 1);
+
 // Vercel's build image has the compiler's shared C++ libraries, but its Node
 // runtime need not. Ship those exact libraries beside the executable.
 mkdirSync('.simulators/lib', { recursive: true });

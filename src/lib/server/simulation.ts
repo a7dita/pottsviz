@@ -2,17 +2,21 @@ import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 
 /** One child process and one response per visitor; no shared files or jobs. */
-export function streamSimulation(program: 'homo', args: number[], signal: AbortSignal) {
+export function streamSimulation(program: 'homo' | 'hybrid', args: number[], signal: AbortSignal) {
   const encoder = new TextEncoder();
   let stop = () => {};
   return new ReadableStream<Uint8Array>({
     start(controller) {
-      const child = spawn(resolve('.simulators', program), [
-        ...args.slice(0, 3).map(String), '--stream', String(args[3])
-      ], { stdio: ['ignore', 'pipe', 'pipe'] });
+      const steps = args[args.length - 1];
+      const child = spawn(resolve('.simulators', program), program === 'homo' ? [
+        ...args.slice(0, 3).map(String), '--stream', String(steps)
+      ] : args.map(String), { stdio: ['ignore', 'pipe', 'pipe'] });
       let ended = false;
       let pending = '';
       let diagnostics = '';
+      let posterior: number[] | undefined;
+      let samples = 0;
+      const startedAt = Date.now();
       const send = (event: object) => {
         if (!ended) controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
       };
@@ -25,6 +29,8 @@ export function streamSimulation(program: 'homo', args: number[], signal: AbortS
         controller.close();
       };
       stop = () => {
+        if (ended) return;
+        console.info('Simulation cancelled', { program, samples, elapsedMs: Date.now() - startedAt });
         child.kill('SIGKILL');
         if (!ended) {
           ended = true;
@@ -35,9 +41,9 @@ export function streamSimulation(program: 'homo', args: number[], signal: AbortS
       const deadline = setTimeout(() => {
         child.kill('SIGKILL');
         finish({ type: 'error', message: 'Simulation time limit reached. Please try a shorter run.' });
-      }, 55000);
+      }, program === 'hybrid' ? 270000 : 55000);
       signal.addEventListener('abort', stop, { once: true });
-      send({ type: 'started', steps: args[3], memories: 100 });
+      send({ type: 'started', steps, memories: 100, topology: program === 'hybrid' ? 'one-to-one' : undefined });
       child.stdout.setEncoding('utf8');
       child.stdout.on('data', (chunk: string) => {
         pending += chunk;
@@ -46,7 +52,18 @@ export function streamSimulation(program: 'homo', args: number[], signal: AbortS
         for (const line of lines) {
           const cells = line.trim().split(/\s+/).map(Number);
           if (cells.length === 101 && cells.every(Number.isFinite)) {
-            send({ type: 'sample', time: cells[0], posterior: cells.slice(1) });
+            if (program === 'homo') { samples++; send({ type: 'sample', time: cells[0], posterior: cells.slice(1) }); }
+            else if (!posterior) posterior = cells;
+            else {
+              if (posterior[0] !== cells[0]) {
+                child.kill('SIGKILL');
+                finish({ type: 'error', message: 'The network snapshots could not be synchronized.' });
+                return;
+              }
+              send({ type: 'sample', time: cells[0], posterior: posterior.slice(1), frontal: cells.slice(1) });
+              samples++;
+              posterior = undefined;
+            }
           }
         }
       });
@@ -60,7 +77,11 @@ export function streamSimulation(program: 'homo', args: number[], signal: AbortS
         if (code !== 0) {
           console.error('Simulator exited', { program, code, diagnostics });
           finish({ type: 'error', message: 'The simulation failed. Please try again.' });
-        } else finish({ type: 'done' });
+        } else if (posterior) finish({ type: 'error', message: 'The final network snapshot was incomplete.' });
+        else {
+          console.info('Simulation finished', { program, samples, elapsedMs: Date.now() - startedAt });
+          finish(samples ? { type: 'done' } : { type: 'error', message: 'The simulation produced no valid snapshots.' });
+        }
       });
       if (signal.aborted) stop();
     },
