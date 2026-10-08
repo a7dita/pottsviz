@@ -14,7 +14,7 @@
   $: selected = topologies.find(item => item.id === topologyId) ?? topologies[0];
   let frontalS = 7, posteriorS = 7, frontalW = 1.1, posteriorW = 1.1;
   let frontalTau = 400, posteriorTau = 100, frontalLambda = 0.5, posteriorLambda = 0.5;
-  let U = 0.3, beta = 11, a = 0.25, tau1 = 20, density = 0.15;
+  let U = 0.1, beta = 11, a = 0.25, tau1 = 20, density = 0.15;
   let frontalCue = 0, posteriorCue = 0, frontalRandom = false, posteriorRandom = false;
   let steps = 2500;
   let samples: Sample[] = [], isRunning = false, status = 'Ready', error = '';
@@ -79,7 +79,7 @@
       <p class="note">500 units and 49 fresh random memories per region. Colours identify memory indices; read the matrix to see their associations.</p>
       <details class="card">
         <summary>Model and run details</summary>
-        <p class="note">Adaptation tracks 1.2r, and activity-dependent inhibition is disabled. T₃A, T₃B and γA therefore have no active effect. The original heterogeneous model remains available separately.</p>
+        <p class="note">Adaptation tracks state activity σ. Fast and slow activity-dependent inhibition use T₃A = 10, T₃B = 100000 and γA = 0.5, as in the heterogeneous model.</p>
         <p class="note">λ scales intra-area connections by (1 + λ) and incoming inter-area connections by (1 − λ). At λ = 1 the region receives no inter-area input. Each region receives its own transient cue: a selected stored memory or a fresh, unstored random pattern. Cue strength is 5 and decays with a 40-sweep time scale; it is removed after 360 sweeps.</p>
         {#if runInfo}<p class="note">Topology {runInfo.topology} · pattern seed {runInfo.patternSeed} (posterior) / {(runInfo.patternSeed ?? 0)+1} (frontal) · runtime seed {runInfo.runtimeSeed}</p>{/if}
         <p class="note">Every Start regenerates both memory sets, unit connection dilution and update tables, then uses a fresh runtime seed. The selected association graph and its scores remain fixed.</p>

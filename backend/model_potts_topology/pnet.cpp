@@ -90,8 +90,8 @@ void PNet::initialise(){
         for(k=0;k<S;k++)
             *(s+i*S+k) = sigma0;
         *(s0+i) = 1.-S*sigma0;
-        theta0A[i] = 0.0;
-        theta0B[i] = 0.0;
+        theta0A[i] = params.gammaA*(1.-s0[i]);
+        theta0B[i] = (1.-params.gammaA)*(1.-s0[i]);
     }
 
     //compute h, r, theta*/
@@ -240,12 +240,12 @@ void PNet::update_unit(int i, int flag, double *f1, double *f2){
             }
         }
 
-        // Active state adaptation in simcode_pilot (2026-10-08).
-        theta[i*S+k] += (1.2*r[i*S+k]-theta[i*S+k]) / params.T2;
+        // State-specific fatigue tracks activity, as in the heterogeneous model.
+        theta[i*S+k] += (s[i*S+k]-theta[i*S+k]) / params.T2;
         r[i*S+k] += (h[i*S+k]-theta[i*S+k]-r[i*S+k]) / params.T1;
     }
-    // Pilot study disables activity-dependent inhibition.
-
+    theta0A[i] += (params.gammaA*(1.-s0[i])-theta0A[i])/params.T3A;
+    theta0B[i] += ((1.-params.gammaA)*(1.-s0[i])-theta0B[i])/params.T3B;
 
     //Computing s[i,k], avoiding overflow i
     double rmax = -1000.0;
