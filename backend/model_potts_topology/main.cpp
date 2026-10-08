@@ -1,5 +1,5 @@
 // Browser runner for simcode_pilot's frozen 49-memory topology study.
-// Uses Pottsviz's streaming architecture and the study's active equations.
+// Uses Pottsviz's streaming architecture and heterogeneous adaptation/inhibition.
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         for (Potts_params *params : {&posterior, &frontal}) {
             params->N = N; params->Cm = static_cast<int>(N*density); params->p = 49;
             params->a = a; params->U = U; params->beta = beta; params->T1 = T1;
-            // Inhibition dynamics are disabled in the current pilot study.
+            // Fast and slow inhibition use the heterogeneous model's constants.
             params->T3A = 10.; params->T3B = 100000.; params->gammaA = .5;
         }
         posterior.w = wP; posterior.S = SP; posterior.T2 = tauP;

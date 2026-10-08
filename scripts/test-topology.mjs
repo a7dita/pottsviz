@@ -1,8 +1,26 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'vite';
+
+// Compare full-precision internal states with the unchanged heterogeneous model.
+const parityDirectory = mkdtempSync(join(tmpdir(), 'potts-dynamics-'));
+try {
+  const outputs = ['hybrid', 'topology'].map(model => {
+    const root = `backend/model_potts_${model}`;
+    const program = join(parityDirectory, model);
+    execFileSync('g++', ['-O3', '-std=gnu++17', `-I${root}/include`,
+      '-Ibackend/model_potts_hybrid/include', 'tests/potts-dynamics-parity.cpp',
+      `${root}/pnet.cpp`, 'backend/model_potts_hybrid/functions.cpp',
+      'backend/model_potts_hybrid/rand_gen.cpp', '-o', program]);
+    return execFileSync(program, [], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  });
+  assert.equal(outputs[1], outputs[0], 'Adaptation and both inhibition states match heterogeneous dynamics');
+  assert.equal(outputs[0].trim().split('\n').length, 6*301);
+} finally { rmSync(parityDirectory, { recursive: true, force: true }); }
 
 const directory = 'src/lib/topologies';
 const manifest = JSON.parse(readFileSync(`${directory}/manifest.json`, 'utf8'));
@@ -29,7 +47,7 @@ for (const item of manifest.topologies) {
   assert.equal(n4, item.metrics.n4);
   assert(Math.abs(Math.log1p(n4)-item.metrics.redundancy_log1p) < 1e-12);
   const args = [`${directory}/${item.file}`, 1.1, 1.1, 7, 7, 100, 400, .5, .5,
-    .3, 11, .25, 20, .15, 1, 17, 0, 0, 0, 0, 60, 20].map(String);
+    .1, 11, .25, 20, .15, 1, 17, 0, 0, 0, 0, 60, 20].map(String);
   const rows = execFileSync('.simulators/topology', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
     .trim().split('\n').map(line => line.trim().split(/\s+/).map(Number));
   assert.equal(rows.length, 6);
@@ -42,7 +60,7 @@ for (const fixture of fixtures) {
   const output = execFileSync('.simulators/topology', [`${directory}/${item.file}`, ...fixture.args],
     { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
   assert.deepEqual(output.trim().split('\n').map(line => line.trim().split(/\s+/).map(Number)), fixture.rows,
-    `Dense pilot numerical regression: ${fixture.name ?? fixture.topology}`);
+    `Dense corrected-reference numerical regression: ${fixture.name ?? fixture.topology}`);
 }
 // Isolated regions make the regional cue routing directly observable.
 const independent = fixtures.find(item => item.name === 'independent-stored-cues');
@@ -62,7 +80,7 @@ ignoredCueArgs[15] = '48'; ignoredCueArgs[16] = '19';
 const ignoredCueRows = execFileSync('.simulators/topology', [`${directory}/T00_one_to_one.csv`, ...ignoredCueArgs],
   { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').map(row => row.trim().split(/\s+/).map(Number));
 assert.deepEqual(ignoredCueRows, randomFixture.rows, 'Random cue ignores the disabled stored-memory sliders');
-console.log('PASS: exact upstream topology blobs, 49×49 invariants, all 12 native runs, eight dense pilot regressions, independent stored and unstored random cues.');
+console.log('PASS: heterogeneous dynamics parity, exact upstream topology blobs, 49×49 invariants, all 12 native runs, eight corrected dense regressions, independent stored and unstored random cues.');
 
 const server = await createServer({ server: { host: '127.0.0.1', port: 0 } });
 await server.listen();
@@ -71,7 +89,7 @@ const parameters = {
   model: 'topology', topology: 'T01', steps: 30,
   posterior: { S: 3, w: 1.1, tau2: 100, lambda: .5, cue: 0, randomCue: false },
   frontal: { S: 3, w: 1.1, tau2: 400, lambda: .5, cue: 0, randomCue: false },
-  global: { U: .3, beta: 11, a: .25, tau1: 20, density: .15 }
+  global: { U: .1, beta: 11, a: .25, tau1: 20, density: .15 }
 };
 const request = body => fetch(`${base}/api/simulate`, {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
@@ -119,6 +137,10 @@ try {
   ]) assert.equal((await request(body)).status, 400);
   const html = await (await fetch(`${base}/models/potts_topology`)).text();
   assert.match(html, /Many-to-many Potts Network/);
+  assert.match(html, /U = 0\.10/);
+  assert.match(html, /Adaptation tracks state activity σ/);
+  assert.match(html, /T₃A = 10, T₃B = 100000 and γA = 0\.5/);
+  assert.doesNotMatch(html, /tracks 1\.2r|inhibition is disabled|no active effect/);
   assert.equal((html.match(/<option value="T\d\d"/g) ?? []).length, 12);
   assert.match(html, /score-help-2/);
   assert.equal((html.match(/Cue or random/g) ?? []).length, 2);
