@@ -1,165 +1,75 @@
 <script lang="ts">
-	// I choose to use TypeScript,
-	// which is almost like JavaScript -  but one needs to define types explicitely, when defining variables,
-	//  which significantly helps in debugging.
-
-	// now I import necessary modules
-	import SliderParam from './SliderParam.svelte'; // it creates the slider elements for the parameters.
-	import PlotLatch from './PlotLatch.svelte'; // it creates the svg our latching, when text is passed as arguments.
-	import katex from 'katex'; // this library renders plane-text strings to latex elements.
-
-	// I define latex strings for parameters, using katex
-	const S = katex.renderToString('S');
-	const W = katex.renderToString('w');
-	const Tau2 = katex.renderToString('\\tau_2');
-
-	// I set default values for the parameters
-	let valueS = 7;
-	let valueW = 1.2;
-	let valueTau2 = 200;
-
-	// I set the command for the backend python script (that calls the c++ executable)
-	// I set the textfile name using the user inputs.
-	let command: string;
-	let textfileName: string;
-	$: {
-		command = `python3 automate.py ${valueS} ${valueW} ${valueTau2}`;
-		textfileName = `backend/data/mall_S${valueS}_w${valueW}0_gA0.5_T${valueTau2}.0_cue0`;
-		// TODO we can send multiple textfile names here,
-		// to pass them to multiple plot elements in separate divisions,
-		// to get 3 plots for our 3 cues.
-	}
-	// I initialize the variable that stores the textfile content in frontend.
-	let text: string = '';
-
-	// I create frontend for getting the textfile from the server.
-	const getText = async (textfileName: string) => {
-		const response = await fetch('/api', {
-			method: 'POST',
-			body: JSON.stringify({ textfileName })
-		});
-		const receivedText = await response.text();
-		text = receivedText;
-	};
-
-	// I create frontend for calling python scripts at the server.
-	let result: string | undefined = undefined;
-
-	const runCppProgram = async (command: string) => {
-		const response = await fetch('/api2', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ command })
-		});
-		result = await response.json();
-		// console.log(result);
-	};
-
-	// here I initialize a helper variable to track the state of an ongoing simulation.
-	let intervalId: any = null;
-
-	// I set the state variable and the state function for the start/stop button.
-	// I initialize the state variable as false -> that will show 'start'
-	let isRunning = false;
-	// I want to trigger the state function every time the start/stop button is pressed
-	// so that it can call certain other things.
-	const handleClick = () => {
-		// I call the script on 'start' button pressing only.
-		if (!isRunning) {
-			runCppProgram(command);
-			// FIXME need to kill the backend cpp process upon pressing the 'stop' button.
-			// maybe also delete the generated files of the backend?
-			// for the moment, I'm manually killing the process.
-		}
-
-		// in both starting/stopping cases, I toggle the isRunning state
-		isRunning = !isRunning;
-
-		//when the command is running, I keep calling the getText function every 2 sec
-		if (isRunning) {
-			intervalId = setInterval(() => {
-				getText(textfileName);
-			}, 2000);
-		}
-
-		if (!isRunning) {
-			// I stop execution if it is already running, and 'stop' button pressed
-			clearInterval(intervalId);
-			intervalId = null;
-		}
-	};
+  import { onDestroy } from 'svelte';
+  import SliderParam from './SliderParam.svelte';
+  import OverlapPlot from '$lib/OverlapPlot.svelte';
+  import { runSimulation, type Sample } from '$lib/simulation-client';
+  import katex from 'katex';
+  import 'katex/dist/katex.min.css';
+  const S = katex.renderToString('S');
+  const W = katex.renderToString('w');
+  const Tau2 = katex.renderToString('\\tau_2');
+  let valueS = 7, valueW = 1.2, valueTau2 = 200;
+  let steps = 5000;
+  let samples: Sample[] = [];
+  let isRunning = false;
+  let status = 'Ready', error = '';
+  let abort: AbortController | undefined;
+  let refresh: ReturnType<typeof setTimeout> | undefined;
+  onDestroy(() => { abort?.abort(); clearTimeout(refresh); });
+  async function handleClick() {
+    if (isRunning) { abort?.abort(); return; }
+    const run = new AbortController();
+    abort = run;
+    isRunning = true;
+    error = '';
+    samples = [];
+    status = 'Preparing the network…';
+    const collected: Sample[] = [];
+    try {
+      await runSimulation({ model: 'homo', S: valueS, w: valueW, tau2: valueTau2, steps }, run.signal, sample => {
+        collected.push(sample);
+        if (!refresh) refresh = setTimeout(() => {
+          samples = [...collected];
+          status = `Running · ${samples[samples.length-1].time} / ${steps} sweeps`;
+          refresh = undefined;
+        }, 100);
+      });
+      status = 'Simulation complete';
+    } catch (cause) {
+      if (run.signal.aborted) status = 'Stopped';
+      else { error = cause instanceof Error ? cause.message : 'Simulation failed.'; status = 'Error'; }
+    } finally {
+      clearTimeout(refresh); refresh = undefined;
+      samples = [...collected];
+      isRunning = false;
+      abort = undefined;
+    }
+  }
 </script>
 
-<!-- from here the script section ends, and the HTML starts -->
-<!-- where we put different elements - divisions that have paragraphs, sliders, buttons, images, etc. -->
-<!-- interestingly, in Svelte framework, the JavaScript/TypeScript variables can be called directly from HTML part. -->
-<!-- when we change the values of variables programmetically, HTML elements also stay "reactive" to the changes -->
-
-<!-- I don't understand fully the following part - but it adds some stylesheet to the HTML header that helps katex to render -->
-<svelte:head>
-	<link
-		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
-		integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X"
-		crossorigin="anonymous"
-	/>
-</svelte:head>
-
-<!-- below I am trying to comment what each division does. -->
-<div class="space-y-16 p-4 text-gray-700">
-	<!-- model title -->
-	<div class="flex flex-row place-content-center">
-		<p class="text-3xl text-purple">Demo - Potts Associative Network (Homogenous)</p>
-	</div>
-	<!-- rest of the content -->
-	<div class="flex space-x-14">
-		<div class="space-y-4">
-			<!-- display the parameter choices -->
-			<div class="space-y-2 flex flex-col place-items-center bg-sky-500/[.06] rounded p-4">
-				<p class="">Your choices:</p>
-				<p>{@html S} = {valueS}</p>
-				<p>{@html W} = {valueW}</p>
-				<p>{@html Tau2} = {valueTau2}</p>
-			</div>
-			<!-- create the sliders -->
-			<div>
-				<SliderParam labelName={S} minValue={3} maxValue={11} bind:value={valueS} stepSize={1} />
-				<SliderParam
-					labelName={W}
-					minValue={0.6}
-					maxValue={2.0}
-					bind:value={valueW}
-					stepSize={0.2}
-				/>
-				<SliderParam
-					labelName={Tau2}
-					minValue={100}
-					maxValue={800}
-					bind:value={valueTau2}
-					stepSize={100}
-				/>
-			</div>
-
-			<!-- create the button for starting/stopping the simulation -->
-			<div class="space-y-2 flex flex-col place-items-center p-4">
-				<button
-					class="px-4 py-2 rounded"
-					class:bg-pink-300={isRunning}
-					class:bg-gray-200={!isRunning}
-					class:text-gray-700={!isRunning}
-					class:text-white={isRunning}
-					on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button
-				>
-			</div>
-		</div>
-		<!-- display the plot -->
-		<div
-			class="space-y-2 flex flex-col border-4 border-gray-200 place-items-left rounded p-4 h-[550px] w-[700px]"
-		>
-			<PlotLatch {text} />
-			<!-- here we put the PlotLatch element with the argument it needs to be provided to render the svg. -->
-		</div>
-	</div>
+<svelte:head><title>Homogeneous Potts · Pottsviz</title></svelte:head>
+<div class="space-y-6 p-4 text-gray-700">
+  <h1 class="text-3xl text-purple text-center">Potts Associative Network (Homogeneous)</h1>
+  <div class="flex flex-wrap gap-8">
+    <div class="space-y-4">
+      <div class="space-y-2 flex flex-col items-center bg-sky-500/[.06] rounded p-4">
+        <p>Your choices:</p><p>{@html S} = {valueS}</p><p>{@html W} = {valueW}</p><p>{@html Tau2} = {valueTau2}</p>
+      </div>
+      <fieldset disabled={isRunning} class="space-y-4">
+        <SliderParam ariaLabel="Number of active states" labelName={S} minValue={3} maxValue={11} bind:value={valueS} stepSize={1}/>
+        <SliderParam ariaLabel="Self reinforcement" labelName={W} minValue={0.6} maxValue={2} bind:value={valueW} stepSize={0.2}/>
+        <SliderParam ariaLabel="Adaptation time" labelName={Tau2} minValue={100} maxValue={800} bind:value={valueTau2} stepSize={100}/>
+      </fieldset>
+      <label class="flex gap-2 items-center">Sweeps
+      <select aria-label="Simulation length" disabled={isRunning} bind:value={steps} class="border rounded p-1">
+        <option value={1000}>1,000</option><option value={2500}>2,500</option><option value={5000}>5,000</option>
+      </select>
+    </label>
+    <button class="px-4 py-2 rounded bg-purple-100" on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button>
+      <p role="status" aria-live="polite">{status}</p>
+      {#if error}<p role="alert" class="text-red-700">{error}</p>{/if}
+    </div>
+    <div class="border-2 border-gray-200 rounded p-4 w-[700px] max-w-full"><OverlapPlot {samples}/></div>
+  </div>
+  <p class="text-sm">500 units · 100 memories · each colour follows one memory. The plot updates as the simulation runs.</p>
 </div>

@@ -184,7 +184,7 @@ void read_doubles(int N, int p, double * vec, std::ifstream & file_ref){
     }   
 }
 // ------------------------------------------------------------------------
-void save_doubles(int size, double * vec, std::ofstream & file_ref){
+void save_doubles(int size, double * vec, std::ostream & file_ref){
     /*
     Save double variables to file
     */
@@ -291,7 +291,7 @@ void display_overlaps(int n_to_show, int size, double * vec){
 }
 
 //---------------------------------------------------------------------------
-void save_overlaps(int n_to_show, int size, double * vec, std::ofstream &buf){
+void save_overlaps(int n_to_show, int size, double * vec, std::ostream &buf){
     /*
     save maximum overlaps to the "buf"
     --------
@@ -314,7 +314,7 @@ void save_overlaps(int n_to_show, int size, double * vec, std::ofstream &buf){
     //buf << std::endl;
 }
 //----------------------------------------------------------------------------
-int save_overlaps2(int n_to_show, int size, double * vec, std::ofstream &buf){
+int save_overlaps2(int n_to_show, int size, double * vec, std::ostream &buf){
     /*
     save maximum overlaps to the "buf" and return maximum-overlap index
     --------

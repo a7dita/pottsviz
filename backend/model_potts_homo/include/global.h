@@ -63,7 +63,7 @@ class PNet{
             const double *T2); // T2 is the table for tau2
         void SetupTables(int seed); // make random seqeunces for updating orders
         void snapshot(const int t, const int *xi); // snapshot the network state
-        void snapshot(const int t, const int *xi, std::ofstream &buffer); // return also the overlaps, buffer is a refernce
+        void snapshot(const int t, const int *xi, std::ostream &buffer); // file or live stream
         void compute_m(const int *xi, double *m); // compute overlaps
         char name; // name of the network
         double max_ovlp; // maximum overlap

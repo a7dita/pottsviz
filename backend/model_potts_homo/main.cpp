@@ -12,10 +12,12 @@
 #include "global.h"
 #include <stdlib.h>
 #include <cassert>
+#include <cstring>
 //********************************************************************
 // Put global variables here, though discouraged to do so:
 
 bool show_sim; // whether or not to see simulations on screen
+bool stream_output = false;
 
 // ------------------------------------------------------------------------
 void set_params(Potts_params *params){
@@ -45,7 +47,8 @@ void save_data(double * vec, int n, std::ofstream & outfile){
 }
 // ------------------------------------------------------------------------
 int main(int argc, char *argv[]){
-
+    if (argc < 4) return 2;
+    stream_output = argc > 4 && std::strcmp(argv[4], "--stream") == 0;
     
     int rand_seed = 1990; // random seed for srand48() and rlxd_init()
     
@@ -60,7 +63,8 @@ int main(int argc, char *argv[]){
     assert(w>=0.0);
     assert(tau2>=50. && tau2<=1000.);
     
-    int Runs = 5000; // when to stop simulations
+    int Runs = argc > 5 ? atoi(argv[5]) : 5000;
+    if (Runs < 1 || Runs > 5000) return 2;
         
     //setting parameters for the network
     Potts_params params; 

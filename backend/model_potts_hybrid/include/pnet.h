@@ -3,6 +3,8 @@
 */
 #ifndef PNET_H
 #define PNET_H
+#include <vector>
+#include <unordered_map>
 
 #ifndef FUNCTION_H
 #include "functions.h"
@@ -61,7 +63,7 @@ class Network_runner{
 
         void run_two_nets(PNet *p_net, PNet *f_net, double *Jf2p, double *Jp2f,
             const int *xi_p, const int *xi_f, 
-            std::ofstream & buf1, std::ofstream &buf2, int cue, int save_all);
+            std::ostream & buf1, std::ostream &buf2, int cue, int save_all);
         void compute_field(PNet *post_net, PNet *pre_net, const double *J
             , double *field);
         void make_field_decay(PNet *net_ptr, double *field, int cue, const int *xi
@@ -73,5 +75,7 @@ class Network_runner{
         double g = 5.0;
         double tau = 40.0;
         int dt = 10; // snapshot interval
+        // Immutable inter-area matrices: cache their nonzero source-unit blocks.
+        std::unordered_map<const double*, std::vector<std::vector<int>>> active_sources;
 };
 #endif /* PNET_H */
