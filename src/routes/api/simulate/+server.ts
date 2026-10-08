@@ -1,3 +1,6 @@
+import { randomInt } from 'node:crypto';
+import { resolve } from 'node:path';
+import manifest from '$lib/topologies/manifest.json';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { streamSimulation } from '$lib/server/simulation';
@@ -16,7 +19,8 @@ export const POST: RequestHandler = async ({ request }) => {
   if (!Number.isInteger(steps) || !number(steps, 1, 5000)) {
     return json({ message: 'Please choose between 1 and 5000 sweeps.' }, { status: 400 });
   }
-  let args: number[];
+  let args: (number | string)[];
+  let metadata = {};
   if (model === 'homo' && Number.isInteger(S) && number(S, 3, 11) && number(w, 0.6, 2) && number(tau2, 100, 800)) {
     args = [S, w, tau2, steps];
   } else if (model === 'hybrid' && region(posterior, 800) && region(frontal, 1600) &&
@@ -25,10 +29,27 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ message: 'Choose a slower frontal adaptation time than the posterior adaptation time.' }, { status: 400 });
     }
     args = [posterior.w, frontal.w, posterior.S, frontal.S, posterior.tau2, frontal.tau2, lambda, steps];
+  } else if (model === 'topology' && region(posterior, 800) && region(frontal, 1600)) {
+    const selected = manifest.topologies.find(item => item.id === topology);
+    const global = body.global;
+    if (!selected || !number(posterior.lambda, 0, 1) || !number(frontal.lambda, 0, 1) ||
+      !global || !number(global.U, 0, 0.6) || !number(global.beta, 1, 21) ||
+      !number(global.a, 0.1, 0.4) || !number(global.tau1, 5, 35) || !number(global.density, 0.05, 0.25) ||
+      !Number.isInteger(global.cue) || !number(global.cue, 0, 48) || frontal.tau2 <= posterior.tau2) {
+      return json({ message: 'Choose a saved topology, valid global parameters, and a slower frontal adaptation time.' }, { status: 400 });
+    }
+    // Fresh independent seeds are generated on the server for every Start.
+    // This also refreshes dilution and update tables; the topology stays frozen.
+    const patternSeed = randomInt(1, 2147482001), runtimeSeed = randomInt(1, 2147482001);
+    args = [resolve('.simulators/topologies', selected.file), posterior.w, frontal.w,
+      posterior.S, frontal.S, posterior.tau2, frontal.tau2, posterior.lambda, frontal.lambda,
+      global.U, global.beta, global.a, global.tau1, global.density,
+      patternSeed, runtimeSeed, global.cue, 500, steps];
+    metadata = { memories: 49, topology: selected.id, patternSeed, runtimeSeed };
   } else {
     return json({ message: 'Please choose valid model parameters.' }, { status: 400 });
   }
-  return new Response(streamSimulation(model, args, request.signal), {
+  return new Response(streamSimulation(model, args, request.signal, metadata), {
     headers: { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no' }
   });
 };
