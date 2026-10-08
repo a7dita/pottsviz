@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 
 /** One child process and one response per visitor; no shared files or jobs. */
-export function streamSimulation(program: 'homo' | 'hybrid', args: number[], signal: AbortSignal) {
+export function streamSimulation(program: 'homo' | 'hybrid' | 'topology', args: (number | string)[], signal: AbortSignal, metadata: { memories?: number; topology?: string; patternSeed?: number; runtimeSeed?: number; posteriorCue?: number | 'random'; frontalCue?: number | 'random' } = {}) {
   const encoder = new TextEncoder();
   let stop = () => {};
   return new ReadableStream<Uint8Array>({
@@ -41,9 +41,10 @@ export function streamSimulation(program: 'homo' | 'hybrid', args: number[], sig
       const deadline = setTimeout(() => {
         child.kill('SIGKILL');
         finish({ type: 'error', message: 'Simulation time limit reached. Please try a shorter run.' });
-      }, program === 'hybrid' ? 270000 : 55000);
+      }, program === 'homo' ? 55000 : 270000);
       signal.addEventListener('abort', stop, { once: true });
-      send({ type: 'started', steps, memories: 100, topology: program === 'hybrid' ? 'one-to-one' : undefined });
+      const memories = metadata.memories ?? 100;
+      send({ type: 'started', steps, memories, topology: program === 'hybrid' ? 'one-to-one' : undefined, ...metadata });
       child.stdout.setEncoding('utf8');
       child.stdout.on('data', (chunk: string) => {
         pending += chunk;
@@ -51,7 +52,7 @@ export function streamSimulation(program: 'homo' | 'hybrid', args: number[], sig
         pending = lines.pop() ?? '';
         for (const line of lines) {
           const cells = line.trim().split(/\s+/).map(Number);
-          if (cells.length === 101 && cells.every(Number.isFinite)) {
+          if (cells.length === memories + 1 && cells.every(Number.isFinite)) {
             if (program === 'homo') { samples++; send({ type: 'sample', time: cells[0], posterior: cells.slice(1) }); }
             else if (!posterior) posterior = cells;
             else {

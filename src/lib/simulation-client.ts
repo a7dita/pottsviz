@@ -1,7 +1,9 @@
 export interface Sample { time: number; posterior: number[]; frontal?: number[] }
 
+export interface RunInfo { memories: number; topology?: string; patternSeed?: number; runtimeSeed?: number; posteriorCue?: number | 'random'; frontalCue?: number | 'random' }
+
 export async function runSimulation(
-  parameters: object, signal: AbortSignal, onSample: (sample: Sample) => void
+  parameters: object, signal: AbortSignal, onSample: (sample: Sample) => void, onStarted?: (info: RunInfo) => void
 ) {
   const response = await fetch('/api/simulate', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -25,6 +27,7 @@ export async function runSimulation(
       for (const line of lines) {
         if (!line.trim()) continue;
         const event = JSON.parse(line);
+        if (event.type === 'started') onStarted?.(event);
         if (event.type === 'sample') onSample(event);
         if (event.type === 'error') throw new Error(event.message);
         if (event.type === 'done') completed = true;
