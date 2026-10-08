@@ -39,7 +39,7 @@ The Vercel project uses Node.js 22 and the SvelteKit Vercel adapter. `vercel.jso
 
 `POST /api/simulate` accepts numerical model parameters and returns newline-delimited JSON events: `started`, `sample`, `done`, or `error`. Each fronto-posterior sample contains both regions at the same sweep. The frontend buffers only complete JSON records and throttles SVG redraws. It shows preparation, progress, completion, and errors.
 
-The simulation and response remain within one invocation. There is no Python runtime dependency, shared output directory, cross-invocation filesystem polling, arbitrary shell-command endpoint, or user-supplied file path. The legacy `/api` and `/api2` routes return HTTP 410. The retained historical Python wrappers are not used by the application.
+The simulation and response remain within one invocation. Generated functions enable request cancellation so a disconnected browser can terminate computation. There is no Python runtime dependency, shared output directory, cross-invocation filesystem polling, arbitrary shell-command endpoint, or user-supplied file path. The legacy `/api` and `/api2` routes return HTTP 410. The retained historical Python wrappers are not used by the application.
 
 The simulation function allows up to 300 seconds; its application deadlines are 55 seconds for homogeneous runs and 270 seconds for paired runs. Use a Vercel configuration that permits a 300-second function (Fluid Compute on Hobby, or an appropriate existing plan). Choose a shorter run if the deadline is reached. Each run is independent and ephemeral; results are not stored.
 
