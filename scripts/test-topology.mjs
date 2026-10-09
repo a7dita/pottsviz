@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -24,13 +23,10 @@ try {
 
 const directory = 'src/lib/topologies';
 const manifest = JSON.parse(readFileSync(`${directory}/manifest.json`, 'utf8'));
-const source = JSON.parse(readFileSync('tests/topology-source.json', 'utf8'));
-assert.equal(manifest.topologies.length, 12);
-for (const [file, sha] of Object.entries(source.blobs)) {
-  const bytes = readFileSync(`${directory}/${file}`);
-  assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'), sha,
-    `Frozen upstream blob: ${file}`);
-}
+assert.equal(manifest.topologies.length, 16);
+assert.deepEqual(manifest.topologies.map(item => item.id),
+  ['original', 'random', ...Array.from({length: 7}, (_, m) => `m${m}`), ...Array.from({length: 6}, (_, s) => `s${s+1}`), 'ms7']);
+assert.equal(manifest.label_order, 'generator_order');
 for (const item of manifest.topologies) {
   const matrix = readFileSync(`${directory}/${item.file}`, 'utf8').trim().split('\n').map(row => row.split(',').map(Number));
   assert.equal(matrix.length, 49);
@@ -57,7 +53,8 @@ for (const item of manifest.topologies) {
 const fixtures = JSON.parse(readFileSync('tests/topology-reference.json', 'utf8')).cases;
 for (const fixture of fixtures) {
   const item = manifest.topologies.find(item => item.id === fixture.topology);
-  const output = execFileSync('.simulators/topology', [`${directory}/${item.file}`, ...fixture.args],
+  const input = fixture.file ?? `${directory}/${item.file}`;
+  const output = execFileSync('.simulators/topology', [input, ...fixture.args],
     { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
   assert.deepEqual(output.trim().split('\n').map(line => line.trim().split(/\s+/).map(Number)), fixture.rows,
     `Dense corrected-reference numerical regression: ${fixture.name ?? fixture.topology}`);
@@ -77,16 +74,16 @@ for (const name of ['posterior-random-cue', 'frontal-random-cue', 'both-random-c
 const randomFixture = fixtures.find(item => item.name === 'both-random-cues');
 const ignoredCueArgs = [...randomFixture.args];
 ignoredCueArgs[15] = '48'; ignoredCueArgs[16] = '19';
-const ignoredCueRows = execFileSync('.simulators/topology', [`${directory}/T00_one_to_one.csv`, ...ignoredCueArgs],
+const ignoredCueRows = execFileSync('.simulators/topology', [`${directory}/original.csv`, ...ignoredCueArgs],
   { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').map(row => row.trim().split(/\s+/).map(Number));
 assert.deepEqual(ignoredCueRows, randomFixture.rows, 'Random cue ignores the disabled stored-memory sliders');
-console.log('PASS: heterogeneous dynamics parity, exact upstream topology blobs, 49×49 invariants, all 12 native runs, eight corrected dense regressions, independent stored and unstored random cues.');
+console.log('PASS: heterogeneous dynamics parity, 49×49 invariants, all 16 native runs, eight corrected dense regressions, independent stored and unstored random cues.');
 
 const server = await createServer({ server: { host: '127.0.0.1', port: 0 } });
 await server.listen();
 const base = `http://127.0.0.1:${server.httpServer.address().port}`;
 const parameters = {
-  model: 'topology', topology: 'T01', steps: 30,
+  model: 'topology', topology: 'random', steps: 30,
   posterior: { S: 3, w: 0.6, tau2: 200, lambda: .5, cue: 0, randomCue: false },
   frontal: { S: 3, w: 1.1, tau2: 200, lambda: .5, cue: 0, randomCue: false },
   global: { U: .1, beta: 11, a: .25, tau1: 20, density: 50/256 }
@@ -116,9 +113,9 @@ try {
   assert.notEqual(first.info.patternSeed, second.info.patternSeed);
   assert.notEqual(first.info.runtimeSeed, second.info.runtimeSeed);
   assert.notDeepEqual(first.samples, second.samples, 'Repeated starts refresh both regions');
-  await simulate({ ...parameters, topology: 'T00' });
+  await simulate({ ...parameters, topology: 'original' });
   await simulate({ ...parameters, frontal: { ...parameters.frontal, tau2: 100 } });
-  await simulate({ ...parameters, topology: 'T11', global: { U: .6, beta: 21, a: .4, tau1: 5, density: .25 },
+  await simulate({ ...parameters, topology: 'ms7', global: { U: .6, beta: 21, a: .4, tau1: 5, density: .25 },
     posterior: { ...parameters.posterior, cue: 48 }, frontal: { ...parameters.frontal, cue: 17 } });
   for (const [randomP, randomF] of [[true, false], [false, true], [true, true]]) {
     await simulate({ ...parameters,
@@ -148,7 +145,8 @@ try {
   assert.match(html, /Adaptation tracks state activity σ/);
   assert.match(html, /T₃A = 10, T₃B = 100000 and γA = 0\.5/);
   assert.doesNotMatch(html, /tracks 1\.2r|inhibition is disabled|no active effect/);
-  assert.equal((html.match(/<option value="T\d\d"/g) ?? []).length, 12);
+  assert.equal((html.match(/type="radio"/g) ?? []).length, 4);
+  assert.match(html, /shared-target/);
   assert.match(html, /score-help-2/);
   assert.equal((html.match(/Cue or random/g) ?? []).length, 2);
   assert.match(html, /aria-label="Frontal random cue"/);
@@ -156,7 +154,10 @@ try {
   assert.equal((html.match(/role="tooltip"/g) ?? []).length, 18);
   assert.doesNotMatch(html, /simcode_pilot|Generator order stored|generator order|Cued memory index/);
   assert.doesNotMatch(html, /id="display-order"/);
-  const { topologies } = await server.ssrLoadModule('/src/lib/topologies.ts');
+  const { topologies, topologyForFamily } = await server.ssrLoadModule('/src/lib/topologies.ts');
+  assert.equal(topologyForFamily('modular', 7), topologyForFamily('shared-target', 7));
+  for (let m = 0; m <= 7; m++) assert.equal(topologyForFamily('modular', m).id, m === 7 ? 'ms7' : `m${m}`);
+  for (let s = 1; s <= 7; s++) assert.equal(topologyForFamily('shared-target', s).id, s === 7 ? 'ms7' : `s${s}`);
   const { render } = await server.ssrLoadModule('svelte/server');
   const { default: TopologyView } = await server.ssrLoadModule('/src/routes/models/potts_topology/TopologyView.svelte');
   for (const topology of topologies) {
@@ -168,5 +169,5 @@ try {
     const expected = csv.flatMap((row, f) => row.flatMap((edge, p) => edge ? [[12+f*6, 12+p*6]] : []));
     assert.deepEqual(cells, expected, `${topology.id}: every SVG cell retains its CSV coordinates`);
   }
-  console.log('PASS: fresh concurrent seeds, all regional cue modes, API validation, parameter tooltips, and all 12 rendered matrices match CSVs cell for cell.');
+  console.log('PASS: fresh concurrent seeds, all regional cue modes, API validation, parameter tooltips, and all 16 rendered matrices match CSVs cell for cell.');
 } finally { await server.close(); }

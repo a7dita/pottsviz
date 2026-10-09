@@ -1,8 +1,8 @@
 {
-  "source": "Dense single-threaded pilot reference from simcode_pilot 2b6cee28101e35d35c8d8149d5a5c148005e199c, corrected to heterogeneous activity adaptation (sigma-theta)/T2 and both inhibition initialization/updates with T3A=10, T3B=100000, gammaA=0.5. U=0.1. Previous fixtures verified against the uncorrected dense runner before regeneration. Output streams adapted, energy reporting omitted, regional cue patterns supplied independently. No sparse connection optimization. CSVs freeze the original notebook atlas ordering; no loading or plotting sort.",
+  "source": "Dense single-threaded pilot reference from simcode_pilot 2b6cee28101e35d35c8d8149d5a5c148005e199c, corrected to heterogeneous activity adaptation (sigma-theta)/T2 and both inhibition initialization/updates with T3A=10, T3B=100000, gammaA=0.5. U=0.1. Previous fixtures verified against the uncorrected dense runner before regeneration. Output streams adapted, energy reporting omitted, regional cue patterns supplied independently. No sparse connection optimization. CSVs freeze the original notebook atlas ordering; no loading or plotting sort. Historical degree-seven inputs are retained only as numerical regression fixtures; original retains the exact identity input.",
   "cases": [
     {
-      "topology": "T00",
+      "topology": "original",
       "args": [
         "1.1",
         "1.1",
@@ -887,7 +887,8 @@
           0.0801,
           0.1327
         ]
-      ]
+      ],
+      "file": "tests/fixtures/legacy-topologies/T01_random_regular_a.csv"
     },
     {
       "topology": "T04",
@@ -1331,7 +1332,8 @@
           0.0905,
           0.1197
         ]
-      ]
+      ],
+      "file": "tests/fixtures/legacy-topologies/T04_ensemble_point_02.csv"
     },
     {
       "topology": "T11",
@@ -1775,11 +1777,12 @@
           0.0917,
           0.1345
         ]
-      ]
+      ],
+      "file": "tests/fixtures/legacy-topologies/T11_ensemble_point_09.csv"
     },
     {
       "name": "independent-stored-cues",
-      "topology": "T00",
+      "topology": "original",
       "args": [
         "1.1",
         "1.1",
@@ -2536,7 +2539,7 @@
     },
     {
       "name": "posterior-random-cue",
-      "topology": "T00",
+      "topology": "original",
       "args": [
         "1.1",
         "1.1",
@@ -3293,7 +3296,7 @@
     },
     {
       "name": "frontal-random-cue",
-      "topology": "T00",
+      "topology": "original",
       "args": [
         "1.1",
         "1.1",
@@ -4050,7 +4053,7 @@
     },
     {
       "name": "both-random-cues",
-      "topology": "T00",
+      "topology": "original",
       "args": [
         "1.1",
         "1.1",

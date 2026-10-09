@@ -36,15 +36,33 @@ Choose 1,000, 2,500, or 5,000 sweeps. The inherited termination rules can finish
 
 ### Many-to-many topology model
 
-`/models/potts_topology` uses 49 memories per region and all 12 frozen CSV association graphs from `a7dita/simcode_pilot` at commit `507ef1fd44b9024fa95c72670a7a6177460369a8`. The atlas-order CSVs and manifest in `src/lib/topologies/` are byte-identical to the restored simcode_pilot version recorded in `tests/topology-source.json`. T00 (one-to-one) is the default; T01–T02 are random regular references and T03–T11 are nine ensemble-space points. Rows are frontal target memories and columns are posterior source memories. Each row is normalized to unit mass; reciprocal connections use the transpose. A degree-seven edge has weight 1/7.
+`/models/potts_topology` uses 49 memories in each region for all 16 association
+conditions: `original`, `random`, `m0`–`m6`, `s1`–`s6`, and `ms7`.
+The original reference is a 49 × 49 identity matrix. The four radio options are
+original, random, modular and shared-target. Selecting a structural family
+reveals its integer m or s slider; the matrix and fresh scores update immediately.
+Both sliders select the same `ms7` endpoint at seven. Parameter descriptions
+are available on hover and keyboard focus. The shared-target construction
+groups posterior memories and controls how many frontal partners they share.
+Groups have no assumed semantic meaning.
 
-The left selector previews the association matrix and the manifest's three topology coordinates: `log(1+N4)` redundancy, estimated maximum Barber bipartite modularity `Q*`, and two-step mixing gap `1-sigma2(B/k)^2`. Hover or focus each score for explanations and KaTeX-rendered equations. T00's modularity remains undefined, as recorded in the pilot manifest.
+Rows are frontal target memories and columns are posterior source memories.
+Every CSV and SVG retains generator order, with no shuffling or spectral sort.
+Both repositories use the same generator and seed. The generator can be run
+with `python3 scripts/generate_topologies.py` (NumPy and SciPy required).
+`analysis/topology_design.ipynb` reconstructs the design and displays all 16
+matrices. `src/lib/topologies/manifest.json` and `metrics.csv` hold freshly
+measured R4 redundancy, approximate maximum Barber Q* and two-step mixing gap.
+All scores, including the degree-one original reference, use the actual graph
+degree. Complete-component modularity values for original and ms7 are exact;
+other Q* values use a deterministic greedy search.
 
-The CSVs freeze exactly the original notebook atlas layout. Its permutations of the original legacy files have been baked into the files once, preserving the same twelve abstract graphs and saved scores. Loading, plotting and simulation never sort or shuffle memory IDs. Recomputing the SVD from relabeled matrices is deliberately avoided: signs and repeated singular values can change the ordering. The pilot's `notebook-order.json` records the fixed original atlas permutations, while `legacy-label-map.json` and the two archived numbering versions preserve earlier results. Individual fixed-seed trajectories change when CSV memory numbering changes.
+Rows are normalized to unit association mass, with reciprocal connections
+using the transpose. Degree-seven edges have weight 1/7. The neural dynamics,
+activity adaptation and both inhibition updates retain the heterogeneous model's
+Ryom equations.
 
-This third model uses the **heterogeneous model's adaptation and inhibition**: state adaptation follows `(sigma-theta)/T2`, where sigma is the state activity; both fast and slow activity-dependent inhibition evolve with T3A=10, T3B=100000 and gammaA=0.5. Their initial values match the heterogeneous model. All requested sweeps run even after retrieval disappears. The inherited initial activity is preserved. Each region independently receives a transient cue to a selected stored memory (0 by default), or to a fresh random pattern that is never learned or appended to the 49 stored memories. The cue has strength 5, decay time 40 sweeps and a 360-sweep cutoff. The random pattern has the same sparsity and state count as its region, uses a separate seed derived from the fresh pattern seed, and ignores the disabled stored-memory slider. The unused Gaussian adaptation-time array and energy reporting are omitted. Numerical regression fixtures match an independent dense single-threaded pilot reference with the same adaptation/inhibition corrections at N=60 for eight cases, including different stored cues and all random-cue combinations. A direct dynamics regression also compares initialization and state updates against the heterogeneous backend. The streaming and regional cue interfaces, plus an equivalent optimization that constructs surviving diluted inter-area connections were adapted.
-
-Default values are N=256, C=50, p=49, a=0.25, U=0.1, beta=11, T1=20, S_p=S_f=7, w_p=w_f=1.1, T2_p=T2_f=200, and lambda_p=lambda_f=0.5. The right controls expose shared U (0–0.6), beta (1–21), a (0.1–0.4), T1 (5–35), and presynaptic connections per source region c_m (13–64). The default c_m=50 corresponds exactly to C/N=50/256; the density sent to the backend is derived from this integer control. Regional S, w, T2 and lambda controls, cue index 0–48, and a Random checkbox are also available. Selecting Random greys the cue label and disables its slider without changing its saved value. All parameter symbols have concise descriptions on hover or keyboard focus; fixed grid columns keep sliders aligned for parameter symbols, and group headings sit inside their cards. T3A, T3B and gammaA stay fixed at the heterogeneous model's values and are listed in the model details. The plot supports 49 traces automatically.
+Default values are N=256, C=50, p=49, a=0.25, U=0.1, beta=11, T1=20, S_p=S_f=7, w_p=0.6, w_f=1.1, T2_p=T2_f=200, and lambda_p=lambda_f=0.5. The right controls expose shared U (0–0.6), beta (1–21), a (0.1–0.4), T1 (5–35), and presynaptic connections per source region c_m (13–64). The default c_m=50 corresponds exactly to C/N=50/256; the density sent to the backend is derived from this integer control. Regional S, w, T2 and lambda controls, cue index 0–48, and a Random checkbox are also available. Selecting Random greys the cue label and disables its slider without changing its saved value. All parameter symbols have concise descriptions on hover or keyboard focus; fixed grid columns keep sliders aligned for parameter symbols, and group headings sit inside their cards. T3A, T3B and gammaA stay fixed at the heterogeneous model's values and are listed in the model details. The plot supports 49 traces automatically.
 
 Every Start creates independent random positive pattern and runtime seeds on the server. Posterior and frontal memories use consecutive pattern seeds; dilution and update tables are rebuilt. Seeds appear in the `started` event and the expandable run details. The association topology stays frozen between runs. Only allowlisted topology IDs are accepted; paths and seeds are not supplied by the browser. Each request owns its native process and streaming response, using the same cancellation and timeout architecture as the existing models. Saved CSVs are explicitly bundled beside the native program in Vercel functions.
 
