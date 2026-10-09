@@ -40,7 +40,7 @@ try {
   await simulate({ ...parameters, S: 3, w: 0.6, tau2: 800 });
   const hybrid = {
     model: 'hybrid', topology: 'one-to-one', lambda: 0.5, steps: 30,
-    posterior: { S: 7, w: 1.1, tau2: 200 }, frontal: { S: 7, w: 1.1, tau2: 200 }
+    posterior: { S: 7, w: 0.6, tau2: 200 }, frontal: { S: 7, w: 1.1, tau2: 200 }
   };
   const response = await request(hybrid);
   assert.equal(response.status, 200);
@@ -52,9 +52,15 @@ try {
   assert.equal(pairs.at(-1).time, 30);
   assert(pairs.every(sample => sample.posterior.length === 50 && sample.frontal.length === 50 &&
     [...sample.posterior, ...sample.frontal].every(Number.isFinite)));
+  const reversed = await request({ ...hybrid, frontal: { ...hybrid.frontal, tau2: 100 } });
+  assert.equal(reversed.status, 200);
+  const reversedEvents = (await reversed.text()).trim().split('\n').map(JSON.parse);
+  assert.equal(reversedEvents.at(-1).type, 'done', 'Reversed adaptation times finish successfully');
+  assert(reversedEvents.filter(event => event.type === 'sample').every(sample =>
+    [...sample.posterior, ...sample.frontal].every(Number.isFinite)));
   for (const invalid of [
     { ...hybrid, topology: 'many-to-many' }, { ...hybrid, lambda: 1.1 },
-    { ...hybrid, frontal: { ...hybrid.frontal, tau2: 100 } },
+    { ...hybrid, frontal: { ...hybrid.frontal, tau2: 0 } },
     { ...hybrid, posterior: { ...hybrid.posterior, S: 12 } }
   ]) assert.equal((await request(invalid)).status, 400);
   for (const invalid of [{ ...parameters, S: '7' }, { ...parameters, w: null },
@@ -65,6 +71,8 @@ try {
   assert.match(html, /256 units, 50 incoming connections/);
   assert.match(html, /50 random memories/);
   assert.equal((html.match(/τ₂ = 200/g) ?? []).length, 2);
+  assert.match(html, /S = 7 · w = 1\.1 · τ₂ = 200/);
+  assert.match(html, /S = 7 · w = 0\.6 · τ₂ = 200/);
   assert.match(html, /0\.5/);
   assert.doesNotMatch(html, /Choose a frontal adaptation time|Frontal · slow|Posterior · fast/);
   for (const path of ['/api', '/api2']) assert.equal((await request({}, path)).status, 410);

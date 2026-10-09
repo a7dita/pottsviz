@@ -7,13 +7,12 @@
   import 'katex/dist/katex.min.css';
   const S = katex.renderToString('S'), W = katex.renderToString('w');
   const Tau2 = katex.renderToString('\\tau_2'), L = katex.renderToString('\\lambda');
-  let frontalS = 7, posteriorS = 7, frontalW = 1.1, posteriorW = 1.1;
+  let frontalS = 7, posteriorS = 7, frontalW = 1.1, posteriorW = 0.6;
   let frontalTau = 200, posteriorTau = 200, lambda = 0.5;
   let steps = 5000;
   let samples: Sample[] = [], isRunning = false, status = 'Ready', error = '';
   let abort: AbortController | undefined;
   let refresh: ReturnType<typeof setTimeout> | undefined;
-  $: validTimes = frontalTau >= posteriorTau;
   onDestroy(() => { abort?.abort(); clearTimeout(refresh); });
   async function handleClick() {
     if (isRunning) { abort?.abort(); return; }
@@ -57,10 +56,9 @@
         <option value={1000}>1,000</option><option value={2500}>2,500</option><option value={5000}>5,000</option>
       </select>
     </label>
-    <button class="px-4 py-2 rounded bg-purple-100 disabled:opacity-50" disabled={!isRunning && !validTimes} on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button>
+    <button class="px-4 py-2 rounded bg-purple-100 disabled:opacity-50" on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button>
   </div>
   <p role="status" aria-live="polite" class="text-center">{status}</p>
-  {#if !validTimes}<p class="text-red-700 text-center">Choose a frontal adaptation time at least as large as the posterior adaptation time.</p>{/if}
   {#if error}<p role="alert" class="text-red-700 text-center">{error}</p>{/if}
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <section class="space-y-4">
