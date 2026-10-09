@@ -12,7 +12,7 @@
   const S = math('S'), W = math('w'), Tau2 = math('\\tau_2'), L = math('\\lambda');
   let topologyId = 'T00';
   $: selected = topologies.find(item => item.id === topologyId) ?? topologies[0];
-  let frontalS = 7, posteriorS = 7, frontalW = 1.1, posteriorW = 1.1;
+  let frontalS = 7, posteriorS = 7, frontalW = 1.1, posteriorW = 0.6;
   let frontalTau = 200, posteriorTau = 200, frontalLambda = 0.5, posteriorLambda = 0.5;
   let U = 0.1, beta = 11, a = 0.25, tau1 = 20, connections = 50;
   $: density = connections / 256;
@@ -22,7 +22,6 @@
   let runInfo: RunInfo | undefined;
   let abort: AbortController | undefined;
   let refresh: ReturnType<typeof setTimeout> | undefined;
-  $: validTimes = frontalTau >= posteriorTau;
   onDestroy(() => { abort?.abort(); clearTimeout(refresh); });
   async function handleClick() {
     if (isRunning) { abort?.abort(); return; }
@@ -59,10 +58,9 @@
   <header><h1>Many-to-many Potts Network</h1><p>Explore memory associations between frontal and posterior networks, with equal adaptation times by default.</p></header>
   <div class="toolbar">
     <label title="Number of full update sweeps over both regions.">Sweeps <select disabled={isRunning} bind:value={steps} aria-label="Simulation length"><option value={1000}>1,000</option><option value={2500}>2,500</option><option value={5000}>5,000</option></select></label>
-    <button class="start" disabled={!isRunning && !validTimes} on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button>
+    <button class="start" on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button>
     <p role="status" aria-live="polite">{status}</p>
   </div>
-  {#if !validTimes}<p class="error">Choose a frontal adaptation time at least as large as the posterior adaptation time.</p>{/if}
   {#if error}<p role="alert" class="error">{error}</p>{/if}
   <div class="workspace">
     <aside class="card topology">

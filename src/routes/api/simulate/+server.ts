@@ -25,9 +25,6 @@ export const POST: RequestHandler = async ({ request }) => {
     args = [S, w, tau2, steps];
   } else if (model === 'hybrid' && region(posterior, 800) && region(frontal, 1600) &&
     number(lambda, 0, 1) && topology === 'one-to-one') {
-    if (frontal.tau2 < posterior.tau2) {
-      return json({ message: 'Choose a frontal adaptation time at least as large as the posterior adaptation time.' }, { status: 400 });
-    }
     args = [posterior.w, frontal.w, posterior.S, frontal.S, posterior.tau2, frontal.tau2, lambda, steps];
     metadata = { memories: 50 };
   } else if (model === 'topology' && region(posterior, 800) && region(frontal, 1600)) {
@@ -38,8 +35,8 @@ export const POST: RequestHandler = async ({ request }) => {
     if (!selected || !number(posterior.lambda, 0, 1) || !number(frontal.lambda, 0, 1) ||
       !global || !number(global.U, 0, 0.6) || !number(global.beta, 1, 21) ||
       !number(global.a, 0.1, 0.4) || !number(global.tau1, 5, 35) || !number(global.density, 0.05, 0.25) ||
-      !cue(posterior) || !cue(frontal) || frontal.tau2 < posterior.tau2) {
-      return json({ message: 'Choose a saved topology, valid parameters and regional cues, and a frontal adaptation time at least as large as the posterior adaptation time.' }, { status: 400 });
+      !cue(posterior) || !cue(frontal)) {
+      return json({ message: 'Choose a saved topology, valid parameters and regional cues.' }, { status: 400 });
     }
     // Fresh independent seeds are generated on the server for every Start.
     // This also refreshes dilution and update tables; the topology stays frozen.

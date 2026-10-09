@@ -87,7 +87,7 @@ await server.listen();
 const base = `http://127.0.0.1:${server.httpServer.address().port}`;
 const parameters = {
   model: 'topology', topology: 'T01', steps: 30,
-  posterior: { S: 3, w: 1.1, tau2: 200, lambda: .5, cue: 0, randomCue: false },
+  posterior: { S: 3, w: 0.6, tau2: 200, lambda: .5, cue: 0, randomCue: false },
   frontal: { S: 3, w: 1.1, tau2: 200, lambda: .5, cue: 0, randomCue: false },
   global: { U: .1, beta: 11, a: .25, tau1: 20, density: 50/256 }
 };
@@ -117,6 +117,7 @@ try {
   assert.notEqual(first.info.runtimeSeed, second.info.runtimeSeed);
   assert.notDeepEqual(first.samples, second.samples, 'Repeated starts refresh both regions');
   await simulate({ ...parameters, topology: 'T00' });
+  await simulate({ ...parameters, frontal: { ...parameters.frontal, tau2: 100 } });
   await simulate({ ...parameters, topology: 'T11', global: { U: .6, beta: 21, a: .4, tau1: 5, density: .25 },
     posterior: { ...parameters.posterior, cue: 48 }, frontal: { ...parameters.frontal, cue: 17 } });
   for (const [randomP, randomF] of [[true, false], [false, true], [true, true]]) {
@@ -128,7 +129,7 @@ try {
     { ...parameters, topology: '../../etc/passwd' }, { ...parameters, topology: 'T12' },
     { ...parameters, global: undefined },
     { ...parameters, posterior: { ...parameters.posterior, lambda: 1.01 } },
-    { ...parameters, frontal: { ...parameters.frontal, tau2: 100 } },
+    { ...parameters, frontal: { ...parameters.frontal, tau2: 0 } },
     ...[['U', -.1], ['beta', 22], ['beta', '11'], ['a', .5], ['tau1', 0], ['density', .3]].map(([key, value]) =>
       ({ ...parameters, global: { ...parameters.global, [key]: value } })),
     ...['posterior', 'frontal'].flatMap(area =>
@@ -141,6 +142,8 @@ try {
   assert.match(html, /256 units and 49/);
   assert.match(html, /cₘ = 50 · C\/N = 0\.19531/);
   assert.equal((html.match(/τ₂ = 200/g) ?? []).length, 2);
+  assert.match(html, /w = 1\.1/);
+  assert.match(html, /w = 0\.6/);
   assert.doesNotMatch(html, /Choose a frontal adaptation time|Frontal · slow|Posterior · fast/);
   assert.match(html, /Adaptation tracks state activity σ/);
   assert.match(html, /T₃A = 10, T₃B = 100000 and γA = 0\.5/);
