@@ -37,7 +37,7 @@ async function simulate(body) {
 try {
   const [first, second] = await Promise.all([simulate(parameters), simulate(parameters)]);
   assert.deepEqual(first, second, 'Independent simultaneous visitors get the same seeded result');
-  await simulate({ ...parameters, S: 3, w: 0.6, tau2: 800 });
+  for (const w of [0, 0.2, 2]) await simulate({ ...parameters, S: 3, w, tau2: 800 });
   const hybrid = {
     model: 'hybrid', topology: 'one-to-one', lambda: 0.5, steps: 30,
     posterior: { S: 7, w: 0.6, tau2: 200 }, frontal: { S: 7, w: 1.1, tau2: 200 }
@@ -58,12 +58,25 @@ try {
   assert.equal(reversedEvents.at(-1).type, 'done', 'Reversed adaptation times finish successfully');
   assert(reversedEvents.filter(event => event.type === 'sample').every(sample =>
     [...sample.posterior, ...sample.frontal].every(Number.isFinite)));
+  for (const [posteriorW, frontalW] of [[0, 0], [0.2, 2], [2, 0.2]]) {
+    const response = await request({ ...hybrid,
+      posterior: { ...hybrid.posterior, S: 3, w: posteriorW },
+      frontal: { ...hybrid.frontal, S: 3, w: frontalW } });
+    assert.equal(response.status, 200);
+    const events = (await response.text()).trim().split('\n').map(JSON.parse);
+    assert.equal(events.at(-1).type, 'done', 'Zero and boundary self-reinforcement values finish successfully');
+    assert(events.filter(event => event.type === 'sample').every(sample =>
+      [...sample.posterior, ...sample.frontal].every(Number.isFinite)));
+  }
   for (const invalid of [
     { ...hybrid, topology: 'many-to-many' }, { ...hybrid, lambda: 1.1 },
     { ...hybrid, frontal: { ...hybrid.frontal, tau2: 0 } },
-    { ...hybrid, posterior: { ...hybrid.posterior, S: 12 } }
+    { ...hybrid, posterior: { ...hybrid.posterior, S: 12 } },
+    ...['posterior', 'frontal'].flatMap(area => [-0.2, 2.2].map(w =>
+      ({ ...hybrid, [area]: { ...hybrid[area], w } })))
   ]) assert.equal((await request(invalid)).status, 400);
   for (const invalid of [{ ...parameters, S: '7' }, { ...parameters, w: null },
+    { ...parameters, w: -0.2 }, { ...parameters, w: 2.2 },
     { ...parameters, steps: 5001 }, { command: 'shell commands are not model parameters' }]) {
     assert.equal((await request(invalid)).status, 400);
   }
@@ -75,6 +88,17 @@ try {
   assert.match(html, /S = 7 · w = 0\.6 · τ₂ = 200/);
   assert.match(html, /0\.5/);
   assert.doesNotMatch(html, /Choose a frontal adaptation time|Frontal · slow|Posterior · fast/);
+  for (const [model, expectedCount] of [['homo', 1], ['hybrid', 2], ['topology', 2]]) {
+    const page = await (await fetch(`${base}/models/potts_${model}`)).text();
+    const sliders = [...page.matchAll(/<input\b[^>]*>/g)].map(match => match[0])
+      .filter(input => /aria-label="[^"]*[Ss]elf reinforcement"/.test(input));
+    assert.equal(sliders.length, expectedCount);
+    for (const slider of sliders) {
+      assert.match(slider, /min="0"/);
+      assert.match(slider, /max="2"/);
+      assert.match(slider, /step="0\.2"/);
+    }
+  }
   for (const path of ['/api', '/api2']) assert.equal((await request({}, path)).status, 410);
   console.log('PASS: homogeneous and paired fronto-posterior live output, independent concurrent runs, parameter bounds, retired endpoints.');
 } finally { await server.close(); }
