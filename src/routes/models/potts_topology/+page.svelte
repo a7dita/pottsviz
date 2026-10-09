@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import SliderParam from './ParameterSlider.svelte';
   import CueControl from './CueControl.svelte';
+  import TopologySelector from './TopologySelector.svelte';
   import TopologyView from './TopologyView.svelte';
   import OverlapPlot from '$lib/OverlapPlot.svelte';
   import { topologies } from '$lib/topologies';
@@ -10,7 +11,7 @@
   import 'katex/dist/katex.min.css';
   const math = (value: string) => katex.renderToString(value);
   const S = math('S'), W = math('w'), Tau2 = math('\\tau_2'), L = math('\\lambda');
-  let topologyId = 'T00';
+  let topologyId = 'original';
   $: selected = topologies.find(item => item.id === topologyId) ?? topologies[0];
   let frontalS = 7, posteriorS = 7, frontalW = 1.1, posteriorW = 0.6;
   let frontalTau = 200, posteriorTau = 200, frontalLambda = 0.5, posteriorLambda = 0.5;
@@ -65,10 +66,7 @@
   <div class="workspace">
     <aside class="card topology">
       <h2>Association topology</h2>
-      <label for="topology">Select a topology</label>
-      <select id="topology" disabled={isRunning} bind:value={topologyId} on:change={() => { samples = []; runInfo = undefined; status = 'Ready'; error = ''; }}>
-        {#each topologies as item}<option value={item.id}>{item.id} · {item.name.replaceAll('_', ' ')}</option>{/each}
-      </select>
+      <TopologySelector bind:topologyId disabled={isRunning} on:change={() => { samples = []; runInfo = undefined; status = 'Ready'; error = ''; }} />
       <TopologyView topology={selected} />
       <p class="note">Purple squares are reciprocal associations. Each row has total weight 1: the many-to-many graphs distribute it across seven neighbours.</p>
     </aside>
@@ -129,8 +127,6 @@
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
   .toolbar label { display: flex; align-items: center; gap: .5rem; }
   select { border: 1px solid #d1d5db; border-radius: .4rem; padding: .45rem; background: white; max-width: 100%; }
-  .topology select { width: 100%; margin: .5rem 0; font-size: .85rem; }
-  .topology label { font-size: .8rem; }
   .start { background: #6d28d9; color: white; padding: .6rem 1.2rem; border-radius: .4rem; }
   button:disabled { opacity: .5; }
   .workspace { display: grid; grid-template-columns: minmax(240px, 290px) minmax(360px, 1fr) minmax(275px, 310px); gap: 1.2rem; align-items: start; }

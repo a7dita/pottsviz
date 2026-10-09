@@ -9,7 +9,7 @@
       text: 'Counts four-edge cycles: two frontal memories sharing two posterior neighbours. The score is log(1 + cycle count). Higher values mean more shared associations.' },
     { key: 'q_star', label: 'Modularity', symbol: 'Q^*',
       formula: String.raw`Q^*\approx\max_c\frac{1}{49k}\sum_{f,p}\left(B_{fp}-\frac{k}{49}\right)\delta_{c_f,c_p}`,
-      text: 'Barber bipartite modularity, estimated by a fixed-restart greedy search. Higher values mean stronger communities compared with a degree-preserving null. T00 is outside this degree-seven comparison; Q* is undefined.' },
+      text: 'Barber bipartite modularity, estimated by a fixed-restart greedy search. Higher values mean stronger communities compared with a degree-preserving null. The original reference has degree one; its score is calculated with that degree and should be interpreted separately.' },
     { key: 'mixing_gap', label: 'Mixing gap', symbol: '\\gamma',
       formula: String.raw`\gamma=1-\sigma_2(B/k)^2`,
       text: 'Spectral gap of a two-step memory walk. σ₂ is the second singular value of the normalized association matrix. A larger gap means faster mixing; zero indicates disconnected components.' }
@@ -17,6 +17,7 @@
 </script>
 
 <div class="topology-view">
+  <p class="selected-name" aria-live="polite">{topology.id}</p>
   <p class="caption">Frontal memories ↓ · posterior memories →</p>
   <svg viewBox="0 0 310 310" role="img" aria-label="{topology.id} association matrix: 49 frontal by 49 posterior memories">
     <rect x="12" y="12" width="294" height="294" fill="#f3f0fa" />
@@ -51,6 +52,7 @@
 
 <style>
   svg { width: 100%; }
+  .selected-name { font-weight: 600; color: #6d28d9; margin-top: .7rem; }
   .caption { font-size: .75rem; color: #6b7280; margin: .5rem 0; }
   .scores { display: grid; gap: .5rem; }
   .score { position: relative; }
