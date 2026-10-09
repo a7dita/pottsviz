@@ -25,10 +25,11 @@ export const POST: RequestHandler = async ({ request }) => {
     args = [S, w, tau2, steps];
   } else if (model === 'hybrid' && region(posterior, 800) && region(frontal, 1600) &&
     number(lambda, 0, 1) && topology === 'one-to-one') {
-    if (frontal.tau2 <= posterior.tau2) {
-      return json({ message: 'Choose a slower frontal adaptation time than the posterior adaptation time.' }, { status: 400 });
+    if (frontal.tau2 < posterior.tau2) {
+      return json({ message: 'Choose a frontal adaptation time at least as large as the posterior adaptation time.' }, { status: 400 });
     }
     args = [posterior.w, frontal.w, posterior.S, frontal.S, posterior.tau2, frontal.tau2, lambda, steps];
+    metadata = { memories: 50 };
   } else if (model === 'topology' && region(posterior, 800) && region(frontal, 1600)) {
     const selected = manifest.topologies.find(item => item.id === topology);
     const global = body.global;
@@ -37,8 +38,8 @@ export const POST: RequestHandler = async ({ request }) => {
     if (!selected || !number(posterior.lambda, 0, 1) || !number(frontal.lambda, 0, 1) ||
       !global || !number(global.U, 0, 0.6) || !number(global.beta, 1, 21) ||
       !number(global.a, 0.1, 0.4) || !number(global.tau1, 5, 35) || !number(global.density, 0.05, 0.25) ||
-      !cue(posterior) || !cue(frontal) || frontal.tau2 <= posterior.tau2) {
-      return json({ message: 'Choose a saved topology, valid parameters and regional cues, and a slower frontal adaptation time.' }, { status: 400 });
+      !cue(posterior) || !cue(frontal) || frontal.tau2 < posterior.tau2) {
+      return json({ message: 'Choose a saved topology, valid parameters and regional cues, and a frontal adaptation time at least as large as the posterior adaptation time.' }, { status: 400 });
     }
     // Fresh independent seeds are generated on the server for every Start.
     // This also refreshes dilution and update tables; the topology stays frozen.
@@ -47,7 +48,7 @@ export const POST: RequestHandler = async ({ request }) => {
       posterior.S, frontal.S, posterior.tau2, frontal.tau2, posterior.lambda, frontal.lambda,
       global.U, global.beta, global.a, global.tau1, global.density,
       patternSeed, runtimeSeed, posterior.cue, frontal.cue,
-      Number(posterior.randomCue), Number(frontal.randomCue), 500, steps];
+      Number(posterior.randomCue), Number(frontal.randomCue), 256, steps];
     metadata = { memories: 49, topology: selected.id, patternSeed, runtimeSeed,
       posteriorCue: posterior.randomCue ? 'random' : posterior.cue,
       frontalCue: frontal.randomCue ? 'random' : frontal.cue };

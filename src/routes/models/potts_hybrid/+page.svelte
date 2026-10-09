@@ -8,12 +8,12 @@
   const S = katex.renderToString('S'), W = katex.renderToString('w');
   const Tau2 = katex.renderToString('\\tau_2'), L = katex.renderToString('\\lambda');
   let frontalS = 7, posteriorS = 7, frontalW = 1.1, posteriorW = 1.1;
-  let frontalTau = 400, posteriorTau = 100, lambda = 0.9;
+  let frontalTau = 200, posteriorTau = 200, lambda = 0.5;
   let steps = 5000;
   let samples: Sample[] = [], isRunning = false, status = 'Ready', error = '';
   let abort: AbortController | undefined;
   let refresh: ReturnType<typeof setTimeout> | undefined;
-  $: validTimes = frontalTau > posteriorTau;
+  $: validTimes = frontalTau >= posteriorTau;
   onDestroy(() => { abort?.abort(); clearTimeout(refresh); });
   async function handleClick() {
     if (isRunning) { abort?.abort(); return; }
@@ -45,7 +45,7 @@
 <svelte:head><title>Fronto-posterior Potts · Pottsviz</title></svelte:head>
 <div class="space-y-5 p-4 text-gray-700" style="width:min(1240px,100vw)">
   <h1 class="text-3xl text-purple text-center">Fronto-posterior Potts Network</h1>
-  <p class="text-center">One-to-one memory pairs · slower frontal adaptation · reciprocal coupling</p>
+  <p class="text-center">One-to-one memory pairs · equal adaptation times by default · reciprocal coupling</p>
   <div class="flex flex-wrap items-center justify-center gap-6 bg-sky-500/[.06] rounded p-4">
     <fieldset disabled={isRunning} style="width:320px">
       <SliderParam ariaLabel="Inter-area coupling lambda" labelName={L} minValue={0} maxValue={1} bind:value={lambda} stepSize={0.1}/>
@@ -60,11 +60,11 @@
     <button class="px-4 py-2 rounded bg-purple-100 disabled:opacity-50" disabled={!isRunning && !validTimes} on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button>
   </div>
   <p role="status" aria-live="polite" class="text-center">{status}</p>
-  {#if !validTimes}<p class="text-red-700 text-center">Choose a frontal adaptation time larger than the posterior adaptation time.</p>{/if}
+  {#if !validTimes}<p class="text-red-700 text-center">Choose a frontal adaptation time at least as large as the posterior adaptation time.</p>{/if}
   {#if error}<p role="alert" class="text-red-700 text-center">{error}</p>{/if}
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <section class="space-y-4">
-      <h2 class="text-2xl text-center">Frontal · slow</h2>
+      <h2 class="text-2xl text-center">Frontal</h2>
       <div class="border-2 border-gray-200 rounded p-2"><OverlapPlot {samples} region="frontal"/></div>
       <fieldset disabled={isRunning} class="space-y-4 bg-sky-500/[.06] rounded p-4">
         <SliderParam ariaLabel="Frontal active states" labelName={S} minValue={3} maxValue={11} bind:value={frontalS} stepSize={1}/>
@@ -74,7 +74,7 @@
       </fieldset>
     </section>
     <section class="space-y-4">
-      <h2 class="text-2xl text-center">Posterior · fast</h2>
+      <h2 class="text-2xl text-center">Posterior</h2>
       <div class="border-2 border-gray-200 rounded p-2"><OverlapPlot {samples} region="posterior"/></div>
       <fieldset disabled={isRunning} class="space-y-4 bg-sky-500/[.06] rounded p-4">
         <SliderParam ariaLabel="Posterior active states" labelName={S} minValue={3} maxValue={11} bind:value={posteriorS} stepSize={1}/>
@@ -84,5 +84,5 @@
       </fieldset>
     </section>
   </div>
-  <p class="text-sm">500 units and 100 random memories in each region · matching colours identify paired memories · both plots share the same time axis.</p>
+  <p class="text-sm">256 units, 50 incoming connections from each source region and 50 random memories in each region · matching colours identify paired memories · both plots share the same time axis.</p>
 </div>
