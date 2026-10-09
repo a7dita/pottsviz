@@ -66,7 +66,7 @@
       <div class="border-2 border-gray-200 rounded p-2"><OverlapPlot {samples} region="frontal"/></div>
       <fieldset disabled={isRunning} class="space-y-4 bg-sky-500/[.06] rounded p-4">
         <SliderParam ariaLabel="Frontal active states" labelName={S} minValue={3} maxValue={11} bind:value={frontalS} stepSize={1}/>
-        <SliderParam ariaLabel="Frontal self reinforcement" labelName={W} minValue={0.6} maxValue={2} bind:value={frontalW} stepSize={0.1}/>
+        <SliderParam ariaLabel="Frontal self reinforcement" labelName={W} minValue={0} maxValue={2} bind:value={frontalW} stepSize={0.2}/>
         <SliderParam ariaLabel="Frontal adaptation time" labelName={Tau2} minValue={100} maxValue={1600} bind:value={frontalTau} stepSize={100}/>
         <p>S = {frontalS} · w = {frontalW.toFixed(1)} · τ₂ = {frontalTau}</p>
       </fieldset>
@@ -76,7 +76,7 @@
       <div class="border-2 border-gray-200 rounded p-2"><OverlapPlot {samples} region="posterior"/></div>
       <fieldset disabled={isRunning} class="space-y-4 bg-sky-500/[.06] rounded p-4">
         <SliderParam ariaLabel="Posterior active states" labelName={S} minValue={3} maxValue={11} bind:value={posteriorS} stepSize={1}/>
-        <SliderParam ariaLabel="Posterior self reinforcement" labelName={W} minValue={0.6} maxValue={2} bind:value={posteriorW} stepSize={0.1}/>
+        <SliderParam ariaLabel="Posterior self reinforcement" labelName={W} minValue={0} maxValue={2} bind:value={posteriorW} stepSize={0.2}/>
         <SliderParam ariaLabel="Posterior adaptation time" labelName={Tau2} minValue={100} maxValue={800} bind:value={posteriorTau} stepSize={100}/>
         <p>S = {posteriorS} · w = {posteriorW.toFixed(1)} · τ₂ = {posteriorTau}</p>
       </fieldset>

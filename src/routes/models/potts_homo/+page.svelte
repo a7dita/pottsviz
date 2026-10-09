@@ -57,7 +57,7 @@
       </div>
       <fieldset disabled={isRunning} class="space-y-4">
         <SliderParam ariaLabel="Number of active states" labelName={S} minValue={3} maxValue={11} bind:value={valueS} stepSize={1}/>
-        <SliderParam ariaLabel="Self reinforcement" labelName={W} minValue={0.6} maxValue={2} bind:value={valueW} stepSize={0.2}/>
+        <SliderParam ariaLabel="Self reinforcement" labelName={W} minValue={0} maxValue={2} bind:value={valueW} stepSize={0.2}/>
         <SliderParam ariaLabel="Adaptation time" labelName={Tau2} minValue={100} maxValue={800} bind:value={valueTau2} stepSize={100}/>
       </fieldset>
       <label class="flex gap-2 items-center">Sweeps

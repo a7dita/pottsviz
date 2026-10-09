@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
         double lambda = std::stod(argv[7]);
         int steps = argc > 8 ? std::stoi(argv[8]) : 5000;
         int N = argc > 9 ? std::stoi(argv[9]) : 256;
-        if (!std::isfinite(w_p) || !std::isfinite(w_f) || w_p < 0.6 || w_p > 2. || w_f < 0.6 || w_f > 2. ||
+        if (!std::isfinite(w_p) || !std::isfinite(w_f) || w_p < 0. || w_p > 2. || w_f < 0. || w_f > 2. ||
             S_p < 3 || S_p > 11 || S_f < 3 || S_f > 11 ||
             !std::isfinite(tau_p) || !std::isfinite(tau_f) || tau_p < 100. || tau_p > 800. || tau_f < 100. || tau_f > 1600. ||
             !std::isfinite(lambda) || lambda < 0. || lambda > 1. || steps < 1 || steps > 5000 || N <= 50 || N > 500)

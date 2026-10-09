@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
         int N = std::stoi(argv[21]), steps = std::stoi(argv[22]);
         for (double value : {wP, wF, tauP, tauF, lambdaP, lambdaF, U, beta, a, T1, density})
             if (!std::isfinite(value)) throw std::invalid_argument("Nonfinite parameter");
-        if (wP < .6 || wP > 2 || wF < .6 || wF > 2 || SP < 3 || SP > 11 || SF < 3 || SF > 11 ||
+        if (wP < 0 || wP > 2 || wF < 0 || wF > 2 || SP < 3 || SP > 11 || SF < 3 || SF > 11 ||
             tauP < 100 || tauP > 800 || tauF < 100 || tauF > 1600 ||
             lambdaP < 0 || lambdaP > 1 || lambdaF < 0 || lambdaF > 1 ||
             U < 0 || U > .6 || beta < 1 || beta > 21 || a < .1 || a > .4 ||

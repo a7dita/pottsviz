@@ -114,6 +114,11 @@ try {
   assert.notEqual(first.info.runtimeSeed, second.info.runtimeSeed);
   assert.notDeepEqual(first.samples, second.samples, 'Repeated starts refresh both regions');
   await simulate({ ...parameters, topology: 'original' });
+  for (const [posteriorW, frontalW] of [[0, 0], [0.2, 2], [2, 0.2]]) {
+    await simulate({ ...parameters,
+      posterior: { ...parameters.posterior, w: posteriorW },
+      frontal: { ...parameters.frontal, w: frontalW } });
+  }
   await simulate({ ...parameters, frontal: { ...parameters.frontal, tau2: 100 } });
   await simulate({ ...parameters, topology: 'ms7', global: { U: .6, beta: 21, a: .4, tau1: 5, density: .25 },
     posterior: { ...parameters.posterior, cue: 48 }, frontal: { ...parameters.frontal, cue: 17 } });
@@ -130,7 +135,7 @@ try {
     ...[['U', -.1], ['beta', 22], ['beta', '11'], ['a', .5], ['tau1', 0], ['density', .3]].map(([key, value]) =>
       ({ ...parameters, global: { ...parameters.global, [key]: value } })),
     ...['posterior', 'frontal'].flatMap(area =>
-      [['cue', 49], ['cue', .5], ['cue', -1], ['cue', '0'], ['cue', undefined], ['randomCue', 'true'], ['randomCue', 1], ['randomCue', undefined]]
+      [['w', -0.2], ['w', 2.2], ['cue', 49], ['cue', .5], ['cue', -1], ['cue', '0'], ['cue', undefined], ['randomCue', 'true'], ['randomCue', 1], ['randomCue', undefined]]
         .map(([key, value]) => ({ ...parameters, [area]: { ...parameters[area], [key]: value } })))
   ]) assert.equal((await request(body)).status, 400);
   const html = await (await fetch(`${base}/models/potts_topology`)).text();

@@ -15,13 +15,13 @@ export const POST: RequestHandler = async ({ request }) => {
     typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
   const region = (value: { S?: number; w?: number; tau2?: number } | undefined, maxTau: number) =>
     value && Number.isInteger(value.S) && number(value.S, 3, 11) &&
-    number(value.w, 0.6, 2) && number(value.tau2, 100, maxTau);
+    number(value.w, 0, 2) && number(value.tau2, 100, maxTau);
   if (!Number.isInteger(steps) || !number(steps, 1, 5000)) {
     return json({ message: 'Please choose between 1 and 5000 sweeps.' }, { status: 400 });
   }
   let args: (number | string)[];
   let metadata = {};
-  if (model === 'homo' && Number.isInteger(S) && number(S, 3, 11) && number(w, 0.6, 2) && number(tau2, 100, 800)) {
+  if (model === 'homo' && Number.isInteger(S) && number(S, 3, 11) && number(w, 0, 2) && number(tau2, 100, 800)) {
     args = [S, w, tau2, steps];
   } else if (model === 'hybrid' && region(posterior, 800) && region(frontal, 1600) &&
     number(lambda, 0, 1) && topology === 'one-to-one') {
