@@ -87,9 +87,9 @@ await server.listen();
 const base = `http://127.0.0.1:${server.httpServer.address().port}`;
 const parameters = {
   model: 'topology', topology: 'T01', steps: 30,
-  posterior: { S: 3, w: 1.1, tau2: 100, lambda: .5, cue: 0, randomCue: false },
-  frontal: { S: 3, w: 1.1, tau2: 400, lambda: .5, cue: 0, randomCue: false },
-  global: { U: .1, beta: 11, a: .25, tau1: 20, density: .15 }
+  posterior: { S: 3, w: 1.1, tau2: 200, lambda: .5, cue: 0, randomCue: false },
+  frontal: { S: 3, w: 1.1, tau2: 200, lambda: .5, cue: 0, randomCue: false },
+  global: { U: .1, beta: 11, a: .25, tau1: 20, density: 50/256 }
 };
 const request = body => fetch(`${base}/api/simulate`, {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
@@ -138,6 +138,10 @@ try {
   const html = await (await fetch(`${base}/models/potts_topology`)).text();
   assert.match(html, /Many-to-many Potts Network/);
   assert.match(html, /U = 0\.10/);
+  assert.match(html, /256 units and 49/);
+  assert.match(html, /cₘ = 50 · C\/N = 0\.19531/);
+  assert.equal((html.match(/τ₂ = 200/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /Choose a frontal adaptation time|Frontal · slow|Posterior · fast/);
   assert.match(html, /Adaptation tracks state activity σ/);
   assert.match(html, /T₃A = 10, T₃B = 100000 and γA = 0\.5/);
   assert.doesNotMatch(html, /tracks 1\.2r|inhibition is disabled|no active effect/);

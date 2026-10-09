@@ -13,8 +13,8 @@
 
 void set_params(Potts_params &params, int N) {
     params.N = N;
-    params.Cm = static_cast<int>(N * 0.15);
-    params.p = static_cast<int>(N * 0.20);
+    params.Cm = 50;
+    params.p = 50;
     params.S = 7; params.a = 0.25; params.U = 0.1;
     params.T1 = 20.; params.T2 = 200.; params.T3A = 10.;
     params.T3B = 100000.; params.beta = 11.;
@@ -26,17 +26,17 @@ int main(int argc, char *argv[]) {
     std::ostream output(std::cout.rdbuf());
     std::cout.rdbuf(std::cerr.rdbuf());
     try {
-        if (argc < 8 || argc > 10) throw std::invalid_argument("Expected wP wF SP SF tauP tauF lambda [steps=5000] [N=500]");
+        if (argc < 8 || argc > 10) throw std::invalid_argument("Expected wP wF SP SF tauP tauF lambda [steps=5000] [N=256]");
         double w_p = std::stod(argv[1]), w_f = std::stod(argv[2]);
         int S_p = std::stoi(argv[3]), S_f = std::stoi(argv[4]);
         double tau_p = std::stod(argv[5]), tau_f = std::stod(argv[6]);
         double lambda = std::stod(argv[7]);
         int steps = argc > 8 ? std::stoi(argv[8]) : 5000;
-        int N = argc > 9 ? std::stoi(argv[9]) : 500;
+        int N = argc > 9 ? std::stoi(argv[9]) : 256;
         if (!std::isfinite(w_p) || !std::isfinite(w_f) || w_p < 0.6 || w_p > 2. || w_f < 0.6 || w_f > 2. ||
             S_p < 3 || S_p > 11 || S_f < 3 || S_f > 11 ||
             !std::isfinite(tau_p) || !std::isfinite(tau_f) || tau_p < 100. || tau_p > 800. || tau_f < 100. || tau_f > 1600. ||
-            !std::isfinite(lambda) || lambda < 0. || lambda > 1. || steps < 1 || steps > 5000 || N < 50 || N > 500)
+            !std::isfinite(lambda) || lambda < 0. || lambda > 1. || steps < 1 || steps > 5000 || N <= 50 || N > 500)
             throw std::invalid_argument("Parameters outside supported bounds");
         Potts_params posterior, frontal;
         set_params(posterior, N); set_params(frontal, N);
