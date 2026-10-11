@@ -5,14 +5,14 @@
   export let topologyId = 'original';
   export let disabled = false;
   let family: TopologyFamily = 'original';
-  let m = 0, s = 1;
+  let m = 0, r = 1;
   const dispatch = createEventDispatcher<{ change: string }>();
   const families: { value: TopologyFamily; label: string }[] = [
     { value: 'original', label: 'original' }, { value: 'random', label: 'random' },
-    { value: 'modular', label: 'modular' }, { value: 'shared-target', label: 'shared-target' }
+    { value: 'modular', label: 'modular' }, { value: 'ring-local', label: 'rings' }
   ];
   function selectTopology() {
-    topologyId = topologyForFamily(family, family === 'modular' ? m : s).id;
+    topologyId = topologyForFamily(family, family === 'modular' ? m : r).id;
     dispatch('change', topologyId);
   }
 </script>
@@ -27,14 +27,14 @@
   {#if family === 'modular'}
     <div class="family-slider" on:input={(event) => { m = Number((event.target as HTMLInputElement).value); selectTopology(); }}>
       <SliderParam ariaLabel="Modular parameter m" labelName="m" minValue={0} maxValue={7} bind:value={m} stepSize={1} {disabled}
-        tooltipText="m is the number of each memory’s seven partners inside its corresponding structural group. The remaining 7 − m partners are outside. Groups need no semantic meaning. At m = 7, ms7 has seven separate association blocks." />
-      <output>m = {m} · {m === 7 ? 'ms7' : `m${m}`}</output>
+        tooltipText="m is the number of each memory’s seven partners inside its corresponding structural group. The remaining 7 − m partners are randomly chosen outside, while preserving seven partners on both sides. Groups need no semantic meaning. At m = 7, m7 has seven separate association blocks." />
+      <output>m = {m} · m{m}</output>
     </div>
-  {:else if family === 'shared-target'}
-    <div class="family-slider" on:input={(event) => { s = Number((event.target as HTMLInputElement).value); selectTopology(); }}>
-      <SliderParam ariaLabel="Shared-target parameter s" labelName="s" minValue={1} maxValue={7} bind:value={s} stepSize={1} {disabled}
-        tooltipText="s is the number of frontal partners shared by every pair of posterior memories in a structural group of seven. Every memory keeps seven partners. s = 1 represents the equivalent s = 0 construction. At s = 7, ms7 is the same endpoint as m = 7." />
-      <output>s = {s} · {s === 7 ? 'ms7' : `s${s}`}</output>
+  {:else if family === 'ring-local'}
+    <div class="family-slider" on:input={(event) => { r = Number((event.target as HTMLInputElement).value); selectTopology(); }}>
+      <SliderParam ariaLabel="Ring-local parameter r" labelName="r" minValue={1} maxValue={7} bind:value={r} stepSize={1} {disabled}
+        tooltipText="r is the number of each memory’s seven partners in its local ring neighbourhood: the corresponding memory and three neighbours in each direction, wrapping around 49 memories. The remaining 7 − r partners are randomly chosen outside. Both sides keep seven partners. r counts local connections, not jump distance or exactly shared targets. At r = 7, r7 is the fully local connected ring." />
+      <output>r = {r} · r{r}</output>
     </div>
   {/if}
 </fieldset>

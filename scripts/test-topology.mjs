@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -23,10 +23,12 @@ try {
 
 const directory = 'src/lib/topologies';
 const manifest = JSON.parse(readFileSync(`${directory}/manifest.json`, 'utf8'));
-assert.equal(manifest.topologies.length, 16);
+assert.equal(manifest.topologies.length, 17);
 assert.deepEqual(manifest.topologies.map(item => item.id),
-  ['original', 'random', ...Array.from({length: 7}, (_, m) => `m${m}`), ...Array.from({length: 6}, (_, s) => `s${s+1}`), 'ms7']);
+  ['original', 'random', ...Array.from({length: 8}, (_, m) => `m${m}`), ...Array.from({length: 7}, (_, r) => `r${r+1}`)]);
 assert.equal(manifest.label_order, 'generator_order');
+assert.deepEqual(readdirSync(directory).filter(file => file.endsWith('.csv') && file !== 'metrics.csv').sort(),
+  manifest.topologies.map(item => item.file).sort(), 'Only the active topology matrices are present');
 for (const item of manifest.topologies) {
   const matrix = readFileSync(`${directory}/${item.file}`, 'utf8').trim().split('\n').map(row => row.split(',').map(Number));
   assert.equal(matrix.length, 49);
@@ -34,6 +36,21 @@ for (const item of manifest.topologies) {
   for (let f = 0; f < 49; ++f) {
     assert.equal(matrix[f].reduce((x, y) => x+y), item.degree);
     assert.equal(matrix.reduce((sum, row) => sum+row[f], 0), item.degree);
+  }
+  if (item.family === 'ring-local') {
+    const local = (f, p) => [0, 1, 2, 3, 46, 47, 48].includes((p-f+49)%49);
+    for (let f = 0; f < 49; ++f) {
+      assert.equal(matrix[f].reduce((sum, edge, p) => sum + (local(f,p) ? edge : 0), 0), item.parameter);
+      assert.equal(matrix.reduce((sum, row, p) => sum + (local(p,f) ? row[f] : 0), 0), item.parameter);
+    }
+    assert.equal(item.components, 1);
+    assert.equal(item.edge_weight_after_loading, 1/7);
+    if (item.id === 'r7') {
+      for (let f = 0; f < 49; ++f) for (let p = 0; p < 49; ++p)
+        assert.equal(matrix[f][p], Number(local(f,p)));
+      assert.equal(item.metrics.n4, 1715);
+      assert(Math.abs(item.metrics.mixing_gap - 0.06408105576642742) < 1e-12);
+    }
   }
   let n4 = 0;
   for (let f = 0; f < 49; ++f) for (let g = f+1; g < 49; ++g) {
@@ -77,7 +94,7 @@ ignoredCueArgs[15] = '48'; ignoredCueArgs[16] = '19';
 const ignoredCueRows = execFileSync('.simulators/topology', [`${directory}/original.csv`, ...ignoredCueArgs],
   { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').map(row => row.trim().split(/\s+/).map(Number));
 assert.deepEqual(ignoredCueRows, randomFixture.rows, 'Random cue ignores the disabled stored-memory sliders');
-console.log('PASS: heterogeneous dynamics parity, 49×49 invariants, all 16 native runs, eight corrected dense regressions, independent stored and unstored random cues.');
+console.log('PASS: heterogeneous dynamics parity, 49×49 and ring-local invariants, all 17 native runs, eight corrected dense regressions, independent stored and unstored random cues.');
 
 const server = await createServer({ server: { host: '127.0.0.1', port: 0 } });
 await server.listen();
@@ -120,8 +137,9 @@ try {
       frontal: { ...parameters.frontal, w: frontalW } });
   }
   await simulate({ ...parameters, frontal: { ...parameters.frontal, tau2: 100 } });
-  await simulate({ ...parameters, topology: 'ms7', global: { U: .6, beta: 21, a: .4, tau1: 5, density: .25 },
+  await simulate({ ...parameters, topology: 'm7', global: { U: .6, beta: 21, a: .4, tau1: 5, density: .25 },
     posterior: { ...parameters.posterior, cue: 48 }, frontal: { ...parameters.frontal, cue: 17 } });
+  for (let r = 1; r <= 7; r++) await simulate({ ...parameters, topology: `r${r}` });
   for (const [randomP, randomF] of [[true, false], [false, true], [true, true]]) {
     await simulate({ ...parameters,
       posterior: { ...parameters.posterior, randomCue: randomP },
@@ -129,6 +147,7 @@ try {
   }
   for (const body of [
     { ...parameters, topology: '../../etc/passwd' }, { ...parameters, topology: 'T12' },
+    { ...parameters, topology: 's1' }, { ...parameters, topology: 'ms7' },
     { ...parameters, global: undefined },
     { ...parameters, posterior: { ...parameters.posterior, lambda: 1.01 } },
     { ...parameters, frontal: { ...parameters.frontal, tau2: 0 } },
@@ -151,7 +170,8 @@ try {
   assert.match(html, /T₃A = 10, T₃B = 100000 and γA = 0\.5/);
   assert.doesNotMatch(html, /tracks 1\.2r|inhibition is disabled|no active effect/);
   assert.equal((html.match(/type="radio"/g) ?? []).length, 4);
-  assert.match(html, /shared-target/);
+  assert.match(html, /rings/);
+  assert.doesNotMatch(html, /shared-target/);
   assert.match(html, /score-help-2/);
   assert.equal((html.match(/Cue or random/g) ?? []).length, 2);
   assert.match(html, /aria-label="Frontal random cue"/);
@@ -160,9 +180,9 @@ try {
   assert.doesNotMatch(html, /simcode_pilot|Generator order stored|generator order|Cued memory index/);
   assert.doesNotMatch(html, /id="display-order"/);
   const { topologies, topologyForFamily } = await server.ssrLoadModule('/src/lib/topologies.ts');
-  assert.equal(topologyForFamily('modular', 7), topologyForFamily('shared-target', 7));
-  for (let m = 0; m <= 7; m++) assert.equal(topologyForFamily('modular', m).id, m === 7 ? 'ms7' : `m${m}`);
-  for (let s = 1; s <= 7; s++) assert.equal(topologyForFamily('shared-target', s).id, s === 7 ? 'ms7' : `s${s}`);
+  assert.notEqual(topologyForFamily('modular', 7), topologyForFamily('ring-local', 7));
+  for (let m = 0; m <= 7; m++) assert.equal(topologyForFamily('modular', m).id, `m${m}`);
+  for (let r = 1; r <= 7; r++) assert.equal(topologyForFamily('ring-local', r).id, `r${r}`);
   const { render } = await server.ssrLoadModule('svelte/server');
   const { default: TopologyView } = await server.ssrLoadModule('/src/routes/models/potts_topology/TopologyView.svelte');
   for (const topology of topologies) {
@@ -174,5 +194,5 @@ try {
     const expected = csv.flatMap((row, f) => row.flatMap((edge, p) => edge ? [[12+f*6, 12+p*6]] : []));
     assert.deepEqual(cells, expected, `${topology.id}: every SVG cell retains its CSV coordinates`);
   }
-  console.log('PASS: fresh concurrent seeds, all regional cue modes, API validation, parameter tooltips, and all 16 rendered matrices match CSVs cell for cell.');
+  console.log('PASS: fresh concurrent seeds, ring API runs, all regional cue modes, API validation, parameter tooltips, and all 17 rendered matrices match CSVs cell for cell.');
 } finally { await server.close(); }

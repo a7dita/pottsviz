@@ -36,25 +36,30 @@ Choose 1,000, 2,500, or 5,000 sweeps. The inherited termination rules can finish
 
 ### Many-to-many topology model
 
-`/models/potts_topology` uses 49 memories in each region for all 16 association
-conditions: `original`, `random`, `m0`–`m6`, `s1`–`s6`, and `ms7`.
+`/models/potts_topology` uses 49 memories in each region for all 17 association
+conditions: `original`, `random`, `m0`–`m7`, and `r1`–`r7`.
 The original reference is a 49 × 49 identity matrix. The four radio options are
-original, random, modular and shared-target. Selecting a structural family
-reveals its integer m or s slider; the matrix and fresh scores update immediately.
-Both sliders select the same `ms7` endpoint at seven. Parameter descriptions
-are available on hover and keyboard focus. The shared-target construction
-groups posterior memories and controls how many frontal partners they share.
-Groups have no assumed semantic meaning.
+original, random, modular and rings. Selecting a structural family reveals its
+integer m (0–7) or r (1–7) slider; the matrix and fresh scores update immediately.
+m counts partners inside the corresponding cluster; r counts partners inside
+an overlapping ring neighbourhood with cyclic offsets 0, ±1, ±2, ±3.
+Remaining partners are randomly chosen outside the prescribed neighbourhood,
+with exactly seven partners per memory on both sides. These parameters count
+local connections, rather than fixing pairwise shared-target counts.
+m7 has seven separate association blocks, whereas r7 is the connected local
+ring. The former shared-target family is replaced by rings, and ms7 is renamed
+m7 without changing its matrix. Groups have no assumed semantic meaning.
 
 Rows are frontal target memories and columns are posterior source memories.
 Every CSV and SVG retains generator order, with no shuffling or spectral sort.
-Both repositories use the same generator and seed. The generator can be run
-with `python3 scripts/generate_topologies.py` (NumPy and SciPy required).
-`analysis/topology_design.ipynb` reconstructs the design and displays all 16
+The generator can be run with `python3 scripts/generate_topologies.py` (NumPy
+and SciPy required). Existing reference and m0–m6 matrices retain their seeds;
+rings use seed 20261009 + 200 + r.
+`analysis/topology_design.ipynb` reconstructs the design and displays all 17
 matrices. `src/lib/topologies/manifest.json` and `metrics.csv` hold freshly
 measured R4 redundancy, approximate maximum Barber Q* and two-step mixing gap.
 All scores, including the degree-one original reference, use the actual graph
-degree. Complete-component modularity values for original and ms7 are exact;
+degree. Complete-component modularity values for original and m7 are exact;
 other Q* values use a deterministic greedy search.
 
 Rows are normalized to unit association mass, with reciprocal connections

@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "generation_seed": 20261009,
   "label_order": "generator_order",
   "matrix_axes": {
@@ -7,7 +7,7 @@
     "columns": "posterior"
   },
   "selection": {
-    "description": "original, random, m0\u2013m6, s1\u2013s6, and the common ms7 endpoint.",
+    "description": "original, random, m0\u2013m7, and ring-local r1\u2013r7.",
     "coordinates": [
       "redundancy_log1p",
       "q_star",
@@ -24,13 +24,23 @@
       "parameter": "m",
       "min": 0,
       "max": 7,
-      "endpoint": "ms7"
+      "endpoint": "m7"
     },
-    "shared-target": {
-      "parameter": "s",
+    "ring-local": {
+      "parameter": "r",
       "min": 1,
       "max": 7,
-      "endpoint": "ms7"
+      "endpoint": "r7",
+      "local_offsets": [
+        0,
+        -1,
+        1,
+        -2,
+        2,
+        -3,
+        3
+      ],
+      "seed_offset": 200
     }
   },
   "topologies": [
@@ -197,120 +207,12 @@
       }
     },
     {
-      "id": "s1",
-      "name": "s1",
-      "family": "shared-target",
-      "parameter": 1,
-      "role": "shared-target",
-      "file": "s1.csv",
-      "memories_per_half": 49,
-      "degree": 7,
-      "edge_weight_after_loading": 0.14285714285714285,
-      "components": 1,
-      "metrics": {
-        "n4": 0,
-        "redundancy_log1p": 0.0,
-        "q_star": 0.24323198667221996,
-        "mixing_gap": 0.857142857142857
-      }
-    },
-    {
-      "id": "s2",
-      "name": "s2",
-      "family": "shared-target",
-      "parameter": 2,
-      "role": "shared-target",
-      "file": "s2.csv",
-      "memories_per_half": 49,
-      "degree": 7,
-      "edge_weight_after_loading": 0.14285714285714285,
-      "components": 1,
-      "metrics": {
-        "n4": 147,
-        "redundancy_log1p": 4.997212273764115,
-        "q_star": 0.2840483132028322,
-        "mixing_gap": 0.714285714285714
-      }
-    },
-    {
-      "id": "s3",
-      "name": "s3",
-      "family": "shared-target",
-      "parameter": 3,
-      "role": "shared-target",
-      "file": "s3.csv",
-      "memories_per_half": 49,
-      "degree": 7,
-      "edge_weight_after_loading": 0.14285714285714285,
-      "components": 1,
-      "metrics": {
-        "n4": 441,
-        "redundancy_log1p": 6.091309882077698,
-        "q_star": 0.3881715951686798,
-        "mixing_gap": 0.5714285714285715
-      }
-    },
-    {
-      "id": "s4",
-      "name": "s4",
-      "family": "shared-target",
-      "parameter": 4,
-      "role": "shared-target",
-      "file": "s4.csv",
-      "memories_per_half": 49,
-      "degree": 7,
-      "edge_weight_after_loading": 0.14285714285714285,
-      "components": 1,
-      "metrics": {
-        "n4": 882,
-        "redundancy_log1p": 6.78332520060396,
-        "q_star": 0.4897959183673469,
-        "mixing_gap": 0.42857142857142827
-      }
-    },
-    {
-      "id": "s5",
-      "name": "s5",
-      "family": "shared-target",
-      "parameter": 5,
-      "role": "shared-target",
-      "file": "s5.csv",
-      "memories_per_half": 49,
-      "degree": 7,
-      "edge_weight_after_loading": 0.14285714285714285,
-      "components": 1,
-      "metrics": {
-        "n4": 1470,
-        "redundancy_log1p": 7.293697720601438,
-        "q_star": 0.6122448979591837,
-        "mixing_gap": 0.28571428571428537
-      }
-    },
-    {
-      "id": "s6",
-      "name": "s6",
-      "family": "shared-target",
-      "parameter": 6,
-      "role": "shared-target",
-      "file": "s6.csv",
-      "memories_per_half": 49,
-      "degree": 7,
-      "edge_weight_after_loading": 0.14285714285714285,
-      "components": 1,
-      "metrics": {
-        "n4": 2205,
-        "redundancy_log1p": 7.698936199813447,
-        "q_star": 0.7346938775510204,
-        "mixing_gap": 0.1428571428571429
-      }
-    },
-    {
-      "id": "ms7",
-      "name": "ms7",
-      "family": "endpoint",
+      "id": "m7",
+      "name": "m7",
+      "family": "modular",
       "parameter": 7,
-      "role": "shared_endpoint",
-      "file": "ms7.csv",
+      "role": "modular_endpoint",
+      "file": "m7.csv",
       "memories_per_half": 49,
       "degree": 7,
       "edge_weight_after_loading": 0.14285714285714285,
@@ -320,6 +222,132 @@
         "redundancy_log1p": 8.035278911144667,
         "q_star": 0.8571428571428571,
         "mixing_gap": 0.0
+      }
+    },
+    {
+      "id": "r1",
+      "name": "r1",
+      "family": "ring-local",
+      "parameter": 1,
+      "role": "ring-local",
+      "file": "r1.csv",
+      "memories_per_half": 49,
+      "degree": 7,
+      "edge_weight_after_loading": 0.14285714285714285,
+      "components": 1,
+      "metrics": {
+        "n4": 352,
+        "redundancy_log1p": 5.8664680569332965,
+        "q_star": 0.33111203665139527,
+        "mixing_gap": 0.5693228964467472
+      }
+    },
+    {
+      "id": "r2",
+      "name": "r2",
+      "family": "ring-local",
+      "parameter": 2,
+      "role": "ring-local",
+      "file": "r2.csv",
+      "memories_per_half": 49,
+      "degree": 7,
+      "edge_weight_after_loading": 0.14285714285714285,
+      "components": 1,
+      "metrics": {
+        "n4": 337,
+        "redundancy_log1p": 5.823045895483019,
+        "q_star": 0.33152852977925873,
+        "mixing_gap": 0.5813874433039968
+      }
+    },
+    {
+      "id": "r3",
+      "name": "r3",
+      "family": "ring-local",
+      "parameter": 3,
+      "role": "ring-local",
+      "file": "r3.csv",
+      "memories_per_half": 49,
+      "degree": 7,
+      "edge_weight_after_loading": 0.14285714285714285,
+      "components": 1,
+      "metrics": {
+        "n4": 325,
+        "redundancy_log1p": 5.786897381366708,
+        "q_star": 0.3248646397334444,
+        "mixing_gap": 0.6128442586622349
+      }
+    },
+    {
+      "id": "r4",
+      "name": "r4",
+      "family": "ring-local",
+      "parameter": 4,
+      "role": "ring-local",
+      "file": "r4.csv",
+      "memories_per_half": 49,
+      "degree": 7,
+      "edge_weight_after_loading": 0.14285714285714285,
+      "components": 1,
+      "metrics": {
+        "n4": 354,
+        "redundancy_log1p": 5.872117789475416,
+        "q_star": 0.3344439816743024,
+        "mixing_gap": 0.5504422969748501
+      }
+    },
+    {
+      "id": "r5",
+      "name": "r5",
+      "family": "ring-local",
+      "parameter": 5,
+      "role": "ring-local",
+      "file": "r5.csv",
+      "memories_per_half": 49,
+      "degree": 7,
+      "edge_weight_after_loading": 0.14285714285714285,
+      "components": 1,
+      "metrics": {
+        "n4": 541,
+        "redundancy_log1p": 6.295266001439646,
+        "q_star": 0.44814660558100794,
+        "mixing_gap": 0.4398329798077172
+      }
+    },
+    {
+      "id": "r6",
+      "name": "r6",
+      "family": "ring-local",
+      "parameter": 6,
+      "role": "ring-local",
+      "file": "r6.csv",
+      "memories_per_half": 49,
+      "degree": 7,
+      "edge_weight_after_loading": 0.14285714285714285,
+      "components": 1,
+      "metrics": {
+        "n4": 951,
+        "redundancy_log1p": 6.858565034791365,
+        "q_star": 0.5451895043731778,
+        "mixing_gap": 0.2716771808904793
+      }
+    },
+    {
+      "id": "r7",
+      "name": "r7",
+      "family": "ring-local",
+      "parameter": 7,
+      "role": "ring-local",
+      "file": "r7.csv",
+      "memories_per_half": 49,
+      "degree": 7,
+      "edge_weight_after_loading": 0.14285714285714285,
+      "components": 1,
+      "metrics": {
+        "n4": 1715,
+        "redundancy_log1p": 7.447751280047908,
+        "q_star": 0.6222407330279051,
+        "mixing_gap": 0.06408105576642742
       }
     }
   ]

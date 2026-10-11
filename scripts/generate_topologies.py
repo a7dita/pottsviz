@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate 16 ordered structural association conditions and fresh metrics.
+"""Generate 17 ordered structural association conditions and fresh metrics.
 
 All CSVs are binary frontal-row × posterior-column matrices. Generator labels
 are retained: no row/column relabeling, shuffling, or spectral display ordering.
@@ -69,25 +69,35 @@ def modular_graph(m: int, seed: int = DEFAULT_SEED) -> np.ndarray:
     return graph
 
 
-def shared_target_graph(s: int) -> np.ndarray:
-    """Posterior groups of seven share exactly s frontal targets.
+def ring_neighborhood() -> np.ndarray:
+    """Seven local targets: cyclic offsets 0, ±1, ±2, ±3."""
+    indices = np.arange(M)
+    offsets = (indices[None, :] - indices[:, None]) % M
+    return np.isin(offsets, [0, 1, 2, 3, M - 3, M - 2, M - 1])
 
-    Residual targets use the prime-order affine-plane incidence construction.
-    Different posterior groups share at most one frontal target. s0 and s1
-    are isomorphic, so only s1 is included in the experimental design.
+
+def ring_graph(r: int, seed: int = DEFAULT_SEED) -> np.ndarray:
+    """Exactly r local and 7-r outside partners per memory, on both sides.
+
+    r counts local connections, not jump distance or pairwise shared targets.
+    Matching choices are random within the allowed regions, as for modular_graph.
     """
-    if not 0 <= s <= K:
-        raise ValueError("s must be between zero and seven")
-    posterior_by_frontal = np.zeros((M, M), dtype=np.uint8)
-    for group in range(K):
-        posterior_by_frontal[group*K:(group+1)*K, group*s:(group+1)*s] = 1
-        for position in range(K):
-            for h in range(K-s):
-                target = K*s + h*K + (position + group*h) % K
-                posterior_by_frontal[group*K + position, target] = 1
-    # Conversion of axis convention only; memory indices stay in generator order.
-    graph = posterior_by_frontal.T.copy()
-    validate_graph(graph, require_connected=s < K)
+    if not 1 <= r <= K:
+        raise ValueError("r must be between one and seven")
+    rng = np.random.default_rng(seed)
+    local = ring_neighborhood()
+    graph = np.zeros((M, M), dtype=np.uint8)
+    for within in [True] * r + [False] * (K - r):
+        allowed = (local if within else ~local) & (graph == 0)
+        cost = rng.random((M, M))
+        cost[~allowed] = 1e6
+        rows, cols = linear_sum_assignment(cost)
+        if not allowed[rows, cols].all():
+            raise RuntimeError("unable to construct a disjoint allowed perfect matching")
+        graph[rows, cols] = 1
+    validate_graph(graph)
+    if not all(np.all((graph * local).sum(axis=axis) == r) for axis in (0, 1)):
+        raise RuntimeError("every memory must have exactly r local partners")
     return graph
 
 
@@ -207,8 +217,9 @@ def design_graphs(seed: int = DEFAULT_SEED) -> list[tuple[str, str, int | None, 
     return [("original", "original", None, np.eye(M, dtype=np.uint8)),
             ("random", "random", None, random_regular(seed))] + [
         (f"m{m}", "modular", m, modular_graph(m, seed + 100 + m)) for m in range(K)
-    ] + [(f"s{s}", "shared-target", s, shared_target_graph(s)) for s in range(1, K)] + [
-        ("ms7", "endpoint", K, block_graph())]
+    ] + [("m7", "modular", K, block_graph())] + [
+        (f"r{r}", "ring-local", r, ring_graph(r, seed + 200 + r)) for r in range(1, K + 1)
+    ]
 
 
 def build_design(output: Path, seed: int = DEFAULT_SEED) -> dict:
@@ -220,28 +231,31 @@ def build_design(output: Path, seed: int = DEFAULT_SEED) -> dict:
     entries = []
     for name, family, parameter, graph in design_graphs(seed):
         degree = 1 if name == "original" else K
-        validate_graph(graph, require_connected=name not in ("original", "ms7"), degree=degree)
+        validate_graph(graph, require_connected=name not in ("original", "m7"), degree=degree)
         filename = f"{name}.csv"
         save_matrix(output / filename, graph)
         metric = graph_metrics(np.loadtxt(output / filename, delimiter=",", dtype=np.uint8))
         entries.append({
             "id": name, "name": name, "family": family, "parameter": parameter,
-            "role": {"original": "one_to_one_reference", "random": "random_regular_reference",
-                     "endpoint": "shared_endpoint"}.get(family, family),
+            "role": "modular_endpoint" if name == "m7" else {
+                "original": "one_to_one_reference", "random": "random_regular_reference",
+            }.get(family, family),
             "file": filename, "memories_per_half": M, "degree": degree,
             "edge_weight_after_loading": 1.0 / degree,
             "components": int(len(np.unique(component_labels(graph)))),
             "metrics": metric,
         })
     manifest = {
-        "schema_version": 3, "generation_seed": seed, "label_order": "generator_order",
+        "schema_version": 4, "generation_seed": seed, "label_order": "generator_order",
         "matrix_axes": {"rows": "frontal", "columns": "posterior"},
-        "selection": {"description": "original, random, m0–m6, s1–s6, and the common ms7 endpoint.",
+        "selection": {"description": "original, random, m0–m7, and ring-local r1–r7.",
                       "coordinates": list(METRIC_KEYS)},
         "metric_method": {"q_star": "Barber modularity: component and structural starts, plus 21 random starts; approximate except complete components",
                           "q_star_seed": 1729, "mixing_gap": "1 - sigma2(B / degree)^2"},
-        "families": {"modular": {"parameter": "m", "min": 0, "max": 7, "endpoint": "ms7"},
-                     "shared-target": {"parameter": "s", "min": 1, "max": 7, "endpoint": "ms7"}},
+        "families": {"modular": {"parameter": "m", "min": 0, "max": 7, "endpoint": "m7"},
+                     "ring-local": {"parameter": "r", "min": 1, "max": 7, "endpoint": "r7",
+                                    "local_offsets": [0, -1, 1, -2, 2, -3, 3],
+                                    "seed_offset": 200}},
         "topologies": entries,
     }
     # Replace the previous design while retaining unrelated files and documentation.
