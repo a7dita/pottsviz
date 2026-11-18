@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import SliderParam from './SliderParam.svelte';
   import OverlapPlot from '$lib/OverlapPlot.svelte';
+  import ModelEquations from '$lib/ModelEquations.svelte';
   import { runSimulation, type Sample } from '$lib/simulation-client';
   import katex from 'katex';
   import 'katex/dist/katex.min.css';
@@ -45,6 +46,7 @@
 <div class="space-y-5 p-4 text-gray-700" style="width:min(1240px,100vw)">
   <h1 class="text-3xl text-purple text-center">Fronto-posterior Potts Network</h1>
   <p class="text-center">One-to-one memory pairs · equal adaptation times by default · reciprocal coupling</p>
+  <ModelEquations model="hybrid" />
   <div class="flex flex-wrap items-center justify-center gap-6 bg-sky-500/[.06] rounded p-4">
     <fieldset disabled={isRunning} style="width:320px">
       <SliderParam ariaLabel="Inter-area coupling lambda" labelName={L} minValue={0} maxValue={1} bind:value={lambda} stepSize={0.1}/>

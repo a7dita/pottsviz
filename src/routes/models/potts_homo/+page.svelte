@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import SliderParam from './SliderParam.svelte';
   import OverlapPlot from '$lib/OverlapPlot.svelte';
+  import ModelEquations from '$lib/ModelEquations.svelte';
   import { runSimulation, type Sample } from '$lib/simulation-client';
   import katex from 'katex';
   import 'katex/dist/katex.min.css';
@@ -50,6 +51,7 @@
 <svelte:head><title>Homogeneous Potts · Pottsviz</title></svelte:head>
 <div class="space-y-6 p-4 text-gray-700">
   <h1 class="text-3xl text-purple text-center">Potts Associative Network (Homogeneous)</h1>
+  <ModelEquations model="homo" />
   <div class="flex flex-wrap gap-8">
     <div class="space-y-4">
       <div class="space-y-2 flex flex-col items-center bg-sky-500/[.06] rounded p-4">

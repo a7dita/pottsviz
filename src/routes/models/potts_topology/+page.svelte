@@ -5,6 +5,7 @@
   import TopologySelector from './TopologySelector.svelte';
   import TopologyView from './TopologyView.svelte';
   import OverlapPlot from '$lib/OverlapPlot.svelte';
+  import ModelEquations from '$lib/ModelEquations.svelte';
   import { topologies } from '$lib/topologies';
   import { runSimulation, type Sample, type RunInfo } from '$lib/simulation-client';
   import katex from 'katex';
@@ -57,6 +58,7 @@
 <main class="page">
   <a class="back" href="/models">← All models</a>
   <header><h1>Many-to-many Potts Network</h1><p>Explore memory associations between frontal and posterior networks, with equal adaptation times by default.</p></header>
+  <ModelEquations model="topology" />
   <div class="toolbar">
     <label title="Number of full update sweeps over both regions.">Sweeps <select disabled={isRunning} bind:value={steps} aria-label="Simulation length"><option value={1000}>1,000</option><option value={2500}>2,500</option><option value={5000}>5,000</option></select></label>
     <button class="start" on:click={handleClick}>{isRunning ? 'Stop' : 'Start Simulation'}</button>
